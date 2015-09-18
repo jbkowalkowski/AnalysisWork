@@ -1,0 +1,51 @@
+
+vi /lariat/app/users/jbk/larsoft/localProducts_larsoft_v04_22_00_e7_prof/larsim/v04_09_03/G4/jbkLArG4.mac 
+vi /lariat/app/users/jbk/lariat/develop/localProducts_lariatsoft_develop_e7_prof/lariatsoft/v01_08_02/gdml/lariat.gdml
+
+art -c eventdump.fcl -n 1 /lariat/app/users/tjyang/larsoft/job/Reco2d_5979_58.root
+lar -c prodsingle_lariat.fcl -n 1 -o pig.root > out 2>&1
+lar -c jbk.fcl -n 1 /lariat/app/users/tjyang/larsoft/job/Reco2d_5979_58.root
+
+
+
+MODULE LABEL.. | DATA PRODUCT TYPE.......................................... | SIZE
+costrk........ | std::vector<recob::Track>.................................. | ...6
+cctrack....... | std::vector<recob::PFParticle>............................. | ...3
+costrk........ | std::vector<recob::SpacePoint>............................. | .462
+linecluster... | std::vector<recob::EndPoint2D>............................. | ...3
+cctrack....... | art::Assns<recob::PFParticle,recob::Vertex,void>........... | ...1
+cchit......... | art::Assns<raw::RawDigit,recob::Hit,void>.................. | .535
+linecluster... | art::Assns<recob::Cluster,recob::Hit,void>................. | .482
+SlicerInput... | std::vector<raw::OpDetPulse>............................... | ...4
+cctrack....... | std::vector<recob::Track>.................................. | ...2
+cctrack....... | art::Assns<recob::PFParticle,recob::Track,void>............ | ...2
+linecluster... | std::vector<recob::Hit>.................................... | .535
+caldata....... | std::vector<recob::Wire>................................... | .480
+linecluster... | art::Assns<recob::Cluster,recob::EndPoint2D,unsigned short> | ...?
+pmtrack....... | std::vector<recob::Track>.................................. | ...4
+linecluster... | art::Assns<recob::Cluster,recob::Vertex,unsigned short>.... | ...-
+SlicerInput... | std::vector<raw::RawDigit>................................. | .480
+cctrack....... | std::vector<recob::Vertex>................................. | ...2
+costrk........ | art::Assns<recob::Track,recob::SpacePoint,void>............ | .462
+linecluster... | std::vector<recob::Cluster>................................ | ..15
+pmtrack....... | art::Assns<recob::Track,recob::Hit,void>................... | .320
+caldata....... | art::Assns<raw::RawDigit,recob::Wire,void>................. | .480
+pmtrack....... | art::Assns<recob::SpacePoint,recob::Hit,void>.............. | .320
+linecluster... | std::vector<recob::Vertex>................................. | ...2
+cctrack....... | std::vector<recob::Seed>................................... | ...2
+cchit......... | art::Assns<recob::Wire,recob::Hit,void>.................... | .535
+costrk........ | art::Assns<recob::SpacePoint,recob::Hit,void>.............. | .462
+cctrack....... | art::Assns<recob::Track,recob::Hit,void>................... | .260
+costrk........ | art::Assns<recob::Track,recob::Hit,void>................... | .462
+linecluster... | art::Assns<recob::Wire,recob::Hit,void>.................... | .535
+pmtrack....... | std::vector<recob::SpacePoint>............................. | .320
+pmtrack....... | art::Assns<recob::Track,recob::SpacePoint,void>............ | .320
+cctrack....... | art::Assns<recob::PFParticle,recob::Seed,void>............. | ...2
+cctrack....... | art::Assns<recob::PFParticle,recob::Cluster,void>.......... | ...4
+cchit......... | std::vector<recob::Hit>.................................... | .535
+TriggerResults | art::TriggerResults........................................ | ...-
+SlicerInput... | std::vector<raw::AuxDetDigit>.............................. | ..42
+linecluster... | art::Assns<raw::RawDigit,recob::Hit,void>.................. | .535
+costrk........ | art::Assns<recob::Track,recob::Cluster,void>............... | ..12
+
+

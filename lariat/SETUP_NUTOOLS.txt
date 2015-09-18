@@ -1,0 +1,12 @@
+
+used the instructions at:
+https://cdcvs.fnal.gov/redmine/projects/nusoftart/wiki/Developing_NuTools_Code 
+to do the build here.
+
+Use the following to rebuild:
+$ buildtool -I /lariat/app/users/jbk/nutools/products -b -i
+
+Use the following to setup:
+$ setup nutools v1_14_02 -q e7:prof
+
+

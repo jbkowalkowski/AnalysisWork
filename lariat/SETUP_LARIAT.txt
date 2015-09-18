@@ -1,0 +1,31 @@
+
+$ export MRB_PROJECT=larsoft
+$ mkdir larsoft
+$ cd larsoft
+$ mrb newDev -v v04_22_00 -q e7:prof
+
+building development area for larsoft v04_22_00 -q e7:prof
+
+MRB_BUILDDIR is /lariat/app/users/jbk/larsoft/build_slf6.x86_64
+MRB_SOURCE is /lariat/app/users/jbk/larsoft/srcs 
+INFO: copying /grid/fermiapp/larsoft/products/larsoft/v04_22_00/releaseDB/base_dependency_database
+
+IMPORTANT: You must type
+    source /lariat/app/users/jbk/larsoft/localProducts_larsoft_v04_22_00_e7_prof/setup
+	NOW and whenever you log in
+
+-----
+
+$ cd srcs; mrb gitCheckout larsim
+
+------ 
+
+$ cd ../build_slf6.x86_64/
+$ mrbsetenv 
+$ mrb install -j4 
+
+--------- other commands -------
+
+$ mrb z # from above build directory, zaps build area
+$ mrb uc # resets files after removing things from the srcs area
+$ mrb svnCheckout -t '1.14.02' nutools # checkout the right version 

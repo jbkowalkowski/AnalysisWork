@@ -1,0 +1,63 @@
+/control/verbose 2
+
+# create an empty scene
+# /vis/scene/create
+#
+# /vis/open DAWNFILE
+# /vis/open OGLIX
+# /vis/open HepRepFile
+
+/vis/open HepRepXML
+/vis/heprep/appendGeometry false
+
+# /vis/open ATree
+# /vis/ASCIITree/verbose 12
+
+# draw scene
+# /vis/viewer/set/viewpointThetaPhi 270 0 deg
+# /vis/viewer/zoom 8
+
+# does not work
+# /vis/drawVolume worlds
+# /vis/drawVolume volWorld_PV
+# /vis/drawVolume volDetEnclosure_PV
+# /vis/drawVolume volCryostat_PV
+# /vis/drawVolume voltheX_PV
+
+
+# works
+# /vis/drawVolume LArVoxelReadoutGeometry
+# /vis/drawVolume volTPC_PV
+# /vis/drawVolume voltheX_PV
+
+# /vis/drawVolume volInner_ring_PV
+# /vis/drawVolume volInner_ring2_PV
+# /vis/drawVolume volInner_endcap_front_mod_PV
+# /vis/drawVolume volInner_endcap_PV
+# /vis/drawVolume volOuter_endcap_PV
+# /vis/drawVolume volOuter_endcap_front_PVY
+# /vis/drawVolume volFlangeWindow_PV
+# /vis/drawVolume av_1_impr_1_volAuxDetTOFUS_pv_0
+# /vis/drawVolume av_1_impr_1_volAuxDetMWPC1_pv_1
+# /vis/drawVolume av_1_impr_1_volAuxDetMWPC2_pv_2
+# /vis/drawVolume av_1_impr_1_volAuxDetMWPC3_pv_3
+# /vis/drawVolume av_1_impr_1_volAuxDetMWPC4_pv_4
+# /vis/drawVolume av_1_impr_1_volAuxDetHalo_pv_5
+# /vis/drawVolume av_1_impr_1_volAuxDetTOFDS_pv_6
+# /vis/drawVolume av_1_impr_1_volAuxDetPunchPaddles_pv_7
+/vis/drawVolume av_1_impr_1_volAuxDetMuonRangeStack_pv_8
+
+
+# works but not useful
+# /vis/drawVolume volTubBottom_PV
+
+# /vis/scene/create
+# /vis/scene/add/volume volWorld_PV
+
+#/vis/viewer/flush
+#/vis/scene/add/trajectories
+#/vis/scene/add/hits
+
+# Refresh ready for run
+/vis/viewer/flush
+
