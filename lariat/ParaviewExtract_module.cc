@@ -74,14 +74,18 @@ public:
 private:
   void processTracks(art::Event const& e, std::string const& label);
   void processSP(art::Event const& e, std::string const& label);
+  void processDigits(art::Event const& e, std::string const& label);
 
   std::string prefix_;
+  bool write_digits_;
   std::string po_name_;
   std::string tr_name_;
   std::string sp_name_;
   std::ofstream po_file_;
   std::ofstream tr_file_;
   std::ofstream sp_file_;
+  std::ofstream di_file_;
+  std::ofstream pu_file_;
 };
 
 std::string makeName(std::string const& pre, std::string const& rest)
@@ -105,25 +109,39 @@ void checkFile(ofstream& s, std::string const& n)
 lariat::ParaviewExtract::ParaviewExtract(fhicl::ParameterSet const & pset) :
   EDAnalyzer(pset),
   prefix_(pset.get< std::string >("file_name", "output_")),
+  write_digits_(pset.get< std::string >("write_digits", false)),
   po_name_(makeName(prefix_,"po")),
   tr_name_(makeName(prefix_,"tr")),
   sp_name_(makeName(prefix_,"sp")),
   ht_name_(makeName(prefix_,"ht")),
+  di_name_(makeName(prefix_,"di")),
+  pu_name_(makeName(prefix_,"pu")),
   po_file_(po_name_.c_str()),
   tr_file_(tr_name_.c_str()),
   sp_file_(sp_name_.c_str()),
-  ht_file_(ht_name_.c_str())
+  ht_file_(ht_name_.c_str()),
+  di_file_(di_name_.c_str()),
+  pu_file_(pu_name_.c_str()),
 {
   checkFile(po_file_, po_name_);
   checkFile(tr_file_, tr_name_);
   checkFile(sp_file_, sp_name_);
+  checkFile(ht_file_, ht_name_);
+  checkFile(di_file_, di_name_);
+  checkFile(pu_file_, pu_name_);
 
   // headers
   // po = eid type id index x y z dirx diry dirz p
   // tr = eid type id total x y z dirx diry dirz theta phi
   // sp = eid type id x y z errx erry errz
   // hi = eid type tid peaktime chan peakamp sumadc view wire
-  tr_file_ << "eid/I,type/I,id/I,index/I,x/F,y/F,z/F,dirx/F,diry/F,dirz/F\n";
+  po_file_ << "eid/I,type/I,id/I,index/I,x/F,y/F,z/F,dirx/F,diry/F,dirz/F,p/F\n";
+  tr_file_ << "eid/I,type/I,id/I,total/I\n";
+  sp_file_ << "eid/I,type/I,id/I,x/F,y/F,z/F,errx/F,erry/F,errz/F\n";
+  ht_file_ << "eid/I,type/I,id/I,peaktime/F,chan/F,peakamp/F,sumadc/F,view/I,wire/I\n";
+  // add di and pu
+  di_file_ << "eid/I,type/I,channel/I,samples/I,ped/F,sigma/F\n";
+  pu_file_ << "eid/I,type/I,channel/I,samples/I,pmtframe/I\n";
 }
 
 lariat::ParaviewExtract::~ParaviewExtract()
@@ -178,18 +196,52 @@ void ParaviewExtract::processTracks(art::Event const& e, std::string const& labe
 
 void ParaviewExtract::processSP(art::Event const& e, std::string const& label)
 {
-  auto sp = e.getValidHandle< std::vector<recob::SpacePointk> >(label);
+  auto sp = e.getValidHandle< std::vector<recob::SpacePoint> >(label);
   auto eid = e.event();
 
   for( auto const& it:sp )
     {
-      const double* pos = sp.XYZ();
-      const double* err = sp.ErrXYZ();
+      const double* pos = it.XYZ();
+      const double* err = it.ErrXYZ();
       
-      sp_file_ << eid <<','<< label <<','<< sp.ID()
+      sp_file_ << eid <<','<< label <<','<< it.ID()
 	       <<','<< pos[0] <<','<< pos[1] <<','<< pos[2]
 	       <<','<< err[0] <<','<< err[1] <<','<< err[2]
 	;
+    }
+}
+
+void ParaviewExtract::processDigits(art::Event const& e, std::string const& label)
+{
+  auto digits = e.getValidHandle< std::vector<raw::RawDigit>>(label);
+  auto pulses = e.getValidHandle< std::vector<raw::OpDetPulse>>(label);
+  auto eid = e.event();
+
+  for( auto const& it:digits )
+    {
+      di_file_ << eid <<','<< label <<','<< it.Channel()
+	       <<','<< it.Samples() <<','<< it.GetPedestal() <<','<< it.GetSigma()
+	;
+
+      for(size_t i=0;i<it.Samples();++i)
+	{
+	  di_file_ <<','<< it.ADC(i);
+	}
+      di_file_ << "\n";
+    }
+
+  for( auto const& it:pulses )
+    {
+      pu_file_ << eid <<','<< label <<','<< it.OpChannel()
+	       <<','<< it.Samples() <<','<< it.PMTFrame()
+	;
+
+      std::vector<short> wf = it.Waveform(); 
+      for( auto const& it:wf )
+	{
+	  pu_file_ <<','<< wf;
+	}
+      pu_file_ << "\n";
     }
 }
 
@@ -210,6 +262,9 @@ void lariat::ParaviewExtract::analyze(art::Event const & e)
    processSP(e,"pmtrack");
    processSP(e,"cctrack");
    processSP(e,"costrk");
+
+   if(write_digits_)
+     processDigits(e,"SlicerInput");
 }
 
 void lariat::ParaviewExtract::beginJob()
