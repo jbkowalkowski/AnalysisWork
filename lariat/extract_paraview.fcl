@@ -1,4 +1,4 @@
-#include "DigitReader_config.fcl"
+# #include "DigitReader_config.fcl"
 #include "services_lariat.fcl"
 
 process_name: LariatAnalyzer
@@ -21,6 +21,9 @@ physics:
 	{
 		module_type: "ParaviewExtract"
 		file_prefix: "ex_"
+		write_digits: true
+		write_hits: true
+		write_spacepoints: true
 	}
 }
 
@@ -33,6 +36,6 @@ outputs: {}
 
 services:
 {
-  TFileService: { fileName: "DigitReader.root" }
+  # TFileService: { fileName: "DigitReader.root" }
   message:      @local::standard_info
 }

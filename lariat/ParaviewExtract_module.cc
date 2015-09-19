@@ -78,12 +78,18 @@ private:
 
   std::string prefix_;
   bool write_digits_;
+  bool write_hits_;
+  bool write_spacepoints_;
   std::string po_name_;
   std::string tr_name_;
   std::string sp_name_;
+  std::string ht_name_;
+  std::string di_name_;
+  std::string pu_name_;
   std::ofstream po_file_;
   std::ofstream tr_file_;
   std::ofstream sp_file_;
+  std::ofstream ht_file_;
   std::ofstream di_file_;
   std::ofstream pu_file_;
 };
@@ -109,7 +115,9 @@ void checkFile(ofstream& s, std::string const& n)
 lariat::ParaviewExtract::ParaviewExtract(fhicl::ParameterSet const & pset) :
   EDAnalyzer(pset),
   prefix_(pset.get< std::string >("file_name", "output_")),
-  write_digits_(pset.get< std::string >("write_digits", false)),
+  write_digits_(pset.get< bool >("write_digits", false)),
+  write_hits_(pset.get< bool >("write_hits", false)),
+  write_spacepoints_(pset.get< bool >("write_spacepoints", false)),
   po_name_(makeName(prefix_,"po")),
   tr_name_(makeName(prefix_,"tr")),
   sp_name_(makeName(prefix_,"sp")),
@@ -121,8 +129,9 @@ lariat::ParaviewExtract::ParaviewExtract(fhicl::ParameterSet const & pset) :
   sp_file_(sp_name_.c_str()),
   ht_file_(ht_name_.c_str()),
   di_file_(di_name_.c_str()),
-  pu_file_(pu_name_.c_str()),
+  pu_file_(pu_name_.c_str())
 {
+  std::cerr << "In module ctor\n";
   checkFile(po_file_, po_name_);
   checkFile(tr_file_, tr_name_);
   checkFile(sp_file_, sp_name_);
@@ -148,7 +157,7 @@ lariat::ParaviewExtract::~ParaviewExtract()
 {
 }
 
-void ParaviewExtract::processTracks(art::Event const& e, std::string const& label)
+void lariat::ParaviewExtract::processTracks(art::Event const& e, std::string const& label)
 {
   auto tr = e.getValidHandle< std::vector<recob::Track> >(label);
   art::FindMany<recob::Hit> hits_p(tr, e, "pmtrack");
@@ -160,8 +169,10 @@ void ParaviewExtract::processTracks(art::Event const& e, std::string const& labe
       
       tr_file_ << eid << ',' << label << ',' << tid
 	       <<','<< (*tr)[i].NumberTrajectoryPoints()
-	;
+	<<"\n";
       
+	if(write_hits_)
+	{
       std::vector<recob::Hit const*> hits;
       hits_p.get(i,hits);
       
@@ -170,36 +181,39 @@ void ParaviewExtract::processTracks(art::Event const& e, std::string const& labe
 	  ht_file_ << eid <<','<< label <<','<< tid
 		   <<','<< hits[j]->PeakTime()
 		   <<','<< hits[j]->Channel()
-		   <<','<< hits[j]->PeakAmplitude
+		   <<','<< hits[j]->PeakAmplitude()
 		   <<','<< hits[j]->SummedADC()
 		   <<','<< hits[j]->View()
 		   <<','<< hits[j]->WireID()
-	    ;
+	    <<"\n";
+	}
 	}
 
+    std::cerr << "at track processing position " << i << "\n";
       for(size_t j=0;j<(*tr)[i].NumberTrajectoryPoints();++j)
 	{
+      std::cerr << "at traj processing position " << j << "\n";
 	  double pos[3];
 	  double dir[3];
-	  (*tr)[i].LocationAtPoint(j).getXYZ(pos);
-	  (*tr)[i].DirectionAtPoint(j).getXYZ(dir);
-	  double p = (*tr)[i].MomentumAtPoint(j);
+	  (*tr)[i].LocationAtPoint(j).GetXYZ(pos);
+	  (*tr)[i].DirectionAtPoint(j).GetXYZ(dir);
+	  double p = 0.0; // (*tr)[i].MomentumAtPoint(j);
 	  
 	  po_file_ << eid <<','<< label <<','<< tid <<','<< j
 		   <<','<< pos[0] <<','<< pos[1] <<','<< pos[2]
 		   <<','<< dir[0] <<','<< dir[1] <<','<< dir[2]
 		   <<','<< p
-	    ;
+	    <<"\n";
 	}
     }
 }
 
-void ParaviewExtract::processSP(art::Event const& e, std::string const& label)
+void lariat::ParaviewExtract::processSP(art::Event const& e, std::string const& label)
 {
   auto sp = e.getValidHandle< std::vector<recob::SpacePoint> >(label);
   auto eid = e.event();
 
-  for( auto const& it:sp )
+  for( auto const& it:(*sp) )
     {
       const double* pos = it.XYZ();
       const double* err = it.ErrXYZ();
@@ -207,17 +221,17 @@ void ParaviewExtract::processSP(art::Event const& e, std::string const& label)
       sp_file_ << eid <<','<< label <<','<< it.ID()
 	       <<','<< pos[0] <<','<< pos[1] <<','<< pos[2]
 	       <<','<< err[0] <<','<< err[1] <<','<< err[2]
-	;
+	<<"\n";
     }
 }
 
-void ParaviewExtract::processDigits(art::Event const& e, std::string const& label)
+void lariat::ParaviewExtract::processDigits(art::Event const& e, std::string const& label)
 {
   auto digits = e.getValidHandle< std::vector<raw::RawDigit>>(label);
   auto pulses = e.getValidHandle< std::vector<raw::OpDetPulse>>(label);
   auto eid = e.event();
 
-  for( auto const& it:digits )
+  for( auto const& it:(*digits) )
     {
       di_file_ << eid <<','<< label <<','<< it.Channel()
 	       <<','<< it.Samples() <<','<< it.GetPedestal() <<','<< it.GetSigma()
@@ -230,17 +244,20 @@ void ParaviewExtract::processDigits(art::Event const& e, std::string const& labe
       di_file_ << "\n";
     }
 
-  for( auto const& it:pulses )
+  for( auto const& it:(*pulses) )
     {
       pu_file_ << eid <<','<< label <<','<< it.OpChannel()
-	       <<','<< it.Samples() <<','<< it.PMTFrame()
-	;
+	       <<','<< it.Samples() <<','<< it.PMTFrame() <<','<< it.FirstSample()
+      ;
 
+#if 0
+  // cannot gain access to the waveform (const)
       std::vector<short> wf = it.Waveform(); 
-      for( auto const& it:wf )
+      for( auto const& it:(*wf) )
 	{
 	  pu_file_ <<','<< wf;
 	}
+#endif
       pu_file_ << "\n";
     }
 }
@@ -255,13 +272,20 @@ void lariat::ParaviewExtract::analyze(art::Event const & e)
    art::ServiceHandle<cheat::BackTracker> bt;
 #endif
 
+  std::cerr << "In module analyze\n";
+
    processTracks(e,"pmtrack");
    processTracks(e,"cctrack");
    processTracks(e,"costrk");
 
-   processSP(e,"pmtrack");
-   processSP(e,"cctrack");
-   processSP(e,"costrk");
+  std::cerr << "after module analyze processTracks\n";
+
+   if(write_spacepoints_)
+   {
+     processSP(e,"pmtrack");
+     // processSP(e,"cctrack"); // no such thing
+     processSP(e,"costrk");
+   }
 
    if(write_digits_)
      processDigits(e,"SlicerInput");
