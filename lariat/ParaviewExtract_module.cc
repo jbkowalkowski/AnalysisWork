@@ -144,13 +144,13 @@ lariat::ParaviewExtract::ParaviewExtract(fhicl::ParameterSet const & pset) :
   // tr = eid type id total x y z dirx diry dirz theta phi
   // sp = eid type id x y z errx erry errz
   // hi = eid type tid peaktime chan peakamp sumadc view wire
-  po_file_ << "eid/I,type/I,id/I,index/I,x/F,y/F,z/F,dirx/F,diry/F,dirz/F,p/F\n";
-  tr_file_ << "eid/I,type/I,id/I,total/I\n";
-  sp_file_ << "eid/I,type/I,id/I,x/F,y/F,z/F,errx/F,erry/F,errz/F\n";
-  ht_file_ << "eid/I,type/I,id/I,peaktime/F,chan/F,peakamp/F,sumadc/F,view/I,wire/I\n";
+  po_file_ << "eid/I,type/S,id/I,index/I,x/F,y/F,z/F,dirx/F,diry/F,dirz/F,p/F\n";
+  tr_file_ << "eid/I,type/S,id/I,total/I\n";
+  sp_file_ << "eid/I,type/S,id/I,x/F,y/F,z/F,errx/F,erry/F,errz/F\n";
+  ht_file_ << "eid/I,type/S,id/I,peaktime/F,chan/F,peakamp/F,sumadc/F,view/I,wire/S\n";
   // add di and pu
-  di_file_ << "eid/I,type/I,channel/I,samples/I,ped/F,sigma/F\n";
-  pu_file_ << "eid/I,type/I,channel/I,samples/I,pmtframe/I\n";
+  di_file_ << "eid/I,type/S,channel/I,samples/I,ped/F,sigma/F\n";
+  pu_file_ << "eid/I,type/S,channel/I,samples/I,pmtframe/I\n";
 }
 
 lariat::ParaviewExtract::~ParaviewExtract()
