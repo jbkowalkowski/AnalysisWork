@@ -1,0 +1,42 @@
+# #include "DigitReader_config.fcl"
+#  Xinclude "services_lariat.fcl"
+
+process_name: LariatAnalyzer
+
+#source is now a root file
+source:
+{
+  module_type: RootInput
+  maxEvents:  -1        # Number of events to create
+}
+
+physics:
+{
+
+ analyzers:
+ {
+   # DigitReader:    @local::standard_digitreader
+
+	extractor:
+	{
+		module_type: "ParaviewExtract"
+		file_prefix: "ex_"
+		write_tracks: true
+		write_digits: true
+		write_hits: true
+		write_spacepoints: true
+	}
+}
+
+ analysis:  [extractor]
+ end_paths: [ analysis ]
+
+}
+
+outputs: {}
+
+# services:
+# {
+  # TFileService: { fileName: "DigitReader.root" }
+  # message:      @local::standard_info
+# }
