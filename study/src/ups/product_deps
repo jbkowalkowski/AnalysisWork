@@ -1,0 +1,38 @@
+# See $CETBUILDTOOLS_DIR/templates/product_deps.template for a more
+# fully annotated product_deps file.
+
+# Product specification
+parent uboonecode v4_21_00
+defaultqual e7
+
+# Table-file variable setup specification.
+incdir      product_dir include
+libdir      fq_dir      lib
+bindir      fq_dir      bin
+
+# define product/version pairs
+product		version
+uboonecode	v04_21_00
+art	v1_15_02
+cetbuildtools	v4_16_00	-	only_for_build
+end_product_list
+
+# Matrix of qualifiers versus dependent products
+qualifier	uboonecode	art	compiler	notes
+e7:debug	e7:debug	e7:nu:prof	gcc
+e7:opt	e7:opt	e7:nu:prof	gcc
+e7:prof	e7:prof	e7:nu:prof	gcc
+# end_qualifier_list
+
+table_fragment_begin
+# this is a table file fragment
+# it will be copied verbatim
+table_fragment_end
+
+# Preserve tabs and formatting in emacs and vi / vim:
+
+### Local Variables:
+### tab-width: 8
+### End:
+
+# vi:set ts=8 noexpandtab:
