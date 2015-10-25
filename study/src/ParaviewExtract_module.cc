@@ -64,6 +64,8 @@ namespace lariat
    class ParaviewExtract;
 }
 
+typedef std::vector<std::string> Strings;
+
 class lariat::ParaviewExtract : public art::EDAnalyzer 
 {
 public:
@@ -78,10 +80,10 @@ private:
   void processDigits(art::Event const& e, std::string const& label);
 
   std::string prefix_;
-  bool write_tracks_;
-  bool write_digits_;
-  bool write_hits_;
-  bool write_spacepoints_;
+  Strings write_tracks_;
+  Strings write_digits_;
+  Strings write_hits_;
+  Strings write_spacepoints_;
   std::string po_name_;
   std::string tr_name_;
   std::string sp_name_;
@@ -113,8 +115,6 @@ void checkFile(ofstream& s, std::string const& n)
       throw std::runtime_error(ss.str().c_str());
     }
 }
-
-typedef std::vector<std::string> Strings;
 
 lariat::ParaviewExtract::ParaviewExtract(fhicl::ParameterSet const & pset) :
   EDAnalyzer(pset),
@@ -176,7 +176,7 @@ void lariat::ParaviewExtract::processTracks(art::Event const& e, std::string con
 	       <<','<< (*tr)[i].NumberTrajectoryPoints()
 	       <<"\n";
       
-      if(write_hits_)
+      if(!write_hits_.empty())
 	{
       std::vector<recob::Hit const*> hits;
       hits_p.get(i,hits);
