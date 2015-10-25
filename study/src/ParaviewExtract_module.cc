@@ -114,13 +114,15 @@ void checkFile(ofstream& s, std::string const& n)
     }
 }
 
+typedef std::vector<std::string> Strings;
+
 lariat::ParaviewExtract::ParaviewExtract(fhicl::ParameterSet const & pset) :
   EDAnalyzer(pset),
   prefix_(pset.get< std::string >("file_name", "output_")),
-  write_tracks_(pset.get< bool >("write_tracks", true)),
-  write_digits_(pset.get< bool >("write_digits", false)),
-  write_hits_(pset.get< bool >("write_hits", false)),
-  write_spacepoints_(pset.get< bool >("write_spacepoints", false)),
+  write_tracks_(pset.get<Strings>("write_tracks", Strings())),
+  write_digits_(pset.get<Strings>("write_digits", Strings())),
+  write_hits_(pset.get<Strings>("write_hits", Strings())),
+  write_spacepoints_(pset.get<Strings>("write_spacepoints", Strings())),
   po_name_(makeName(prefix_,"po")),
   tr_name_(makeName(prefix_,"tr")),
   sp_name_(makeName(prefix_,"sp")),
@@ -163,7 +165,7 @@ lariat::ParaviewExtract::~ParaviewExtract()
 void lariat::ParaviewExtract::processTracks(art::Event const& e, std::string const& label)
 {
   auto tr = e.getValidHandle< std::vector<recob::Track> >(label);
-  art::FindMany<recob::Hit> hits_p(tr, e, "pmtrack");
+  art::FindMany<recob::Hit> hits_p(tr, e, label); // "pmtrack");
   auto eid = e.event();
   
   for(size_t i=0;i<tr->size();++i)
@@ -172,9 +174,9 @@ void lariat::ParaviewExtract::processTracks(art::Event const& e, std::string con
       
       tr_file_ << eid << ',' << label << ',' << tid
 	       <<','<< (*tr)[i].NumberTrajectoryPoints()
-	<<"\n";
+	       <<"\n";
       
-	if(write_hits_)
+      if(write_hits_)
 	{
       std::vector<recob::Hit const*> hits;
       hits_p.get(i,hits);
@@ -276,26 +278,36 @@ void lariat::ParaviewExtract::analyze(art::Event const & e)
 #endif
 
   std::cerr << "In module analyze\n";
+  
+  if(!write_tracks_.empty())
+    {
+      for(auto const& lab : write_tracks_)
+	processTracks(e,lab);
 
-  if(write_tracks_)
-  {
-   processTracks(e,"pmtrack");
-   processTracks(e,"cctrack");
-   processTracks(e,"costrk");
-  }
-
+      //processTracks(e,"pmtrack");
+      //processTracks(e,"cctrack");
+      //processTracks(e,"costrk");
+    }
+  
   std::cerr << "after module analyze processTracks\n";
+  
+  if(!write_spacepoints_.empty())
+    {
+      for(auto const& lab : write_spacepoints_)
+	processSP(e,lab);
+      
+      //processSP(e,"pmtrack");
+      // processSP(e,"cctrack"); // no such thing
+      //processSP(e,"costrk");
+    }
 
-   if(write_spacepoints_)
-   {
-     processSP(e,"pmtrack");
-     // processSP(e,"cctrack"); // no such thing
-     processSP(e,"costrk");
-   }
-
-   if(write_digits_)
-     processDigits(e,"daq");
-     // processDigits(e,"SlicerInput");
+  if(!write_digits_.empty())
+    {
+      for(auto const& lab : write_digits_)
+	processDigits(e,lab);
+      //processDigits(e,"daq");
+      // processDigits(e,"SlicerInput");
+    }
 }
 
 void lariat::ParaviewExtract::beginJob()

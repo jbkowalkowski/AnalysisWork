@@ -1,7 +1,7 @@
 # #include "DigitReader_config.fcl"
 #  Xinclude "services_lariat.fcl"
 
-process_name: LariatAnalyzer
+process_name: VIZ
 
 #source is now a root file
 source:
@@ -20,11 +20,28 @@ physics:
 	extractor:
 	{
 		module_type: "ParaviewExtract"
-		file_prefix: "ex_"
-		write_tracks: true
-		write_digits: true
-		write_hits: true
-		write_spacepoints: true
+		file_name: "output_"
+		write_tracks: [ stitchkalmanhit,
+			      cctrack,
+			      pandoraCosmicKHit,
+			      trackkalmanhit,
+			      pandoraNuKHit,
+			      stitchkalmanhitcc,
+			      trackkalmanhitc3d,
+			      trackkalmanhitcc,
+			      stitchkalmanhitc3d ]
+		write_digits: [ daq ]
+		write_hits: [ pandoraCosmicKHitRemoval,
+			    cccluster,
+			    gaushit ]
+		write_spacepoints: [ pandoraCosmicKHit,
+				   cluster3d,
+				   pandoraCosmic,
+				   trackkalmanhit,
+				   trackkalmanhitcc,
+				   trackkalmanhitc3d,
+				   pandoraNuKHit,
+				   pandoraNu ]
 	}
 }
 
