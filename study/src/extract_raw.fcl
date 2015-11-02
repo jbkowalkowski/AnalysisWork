@@ -1,5 +1,8 @@
 # #include "DigitReader_config.fcl"
 #  Xinclude "services_lariat.fcl"
+#  #include "geometry.fcl"
+# #include "geometry_microboone.fcl"
+#include "services_microboone_basic.fcl"
 
 process_name: VIZ
 
@@ -57,3 +60,7 @@ outputs: {}
   # TFileService: { fileName: "DigitReader.root" }
   # message:      @local::standard_info
 # }
+
+services.ExptGeoHelperInterface: @local::microboone_geometry_helper
+services.Geometry: @local::microboone_geo
+
