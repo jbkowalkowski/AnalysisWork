@@ -15,6 +15,9 @@ WriteVTI.cxx
 WriteVTP.cxx
 ParticleReader.cxx
 
+The command I ran to configure VTK for the build on woof:
+cmake -DCMAKE_INSTALL_PREFIX=$HOME -DBUILD_SHARED_LIBS=ON -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DVTK_INSTALL_INCLUDE_DIR=$HOME/include   ../VTK-6.3.0
+
 Begin processing the 1st record. run: 1 subRun: 1085 event: 54201 at
 22-Oct-2015 19:50:47 CDT
 PROCESS NAME | MODULE LABEL................ | PRODUCT INSTANCE NAME | DATA PRODUCT TYPE...................................... | SIZE
