@@ -22,7 +22,10 @@
 // LArSoft includes
 #include "SimpleTypesAndConstants/geo_types.h"
 #include "SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
-// #include "Geometry/Geometry.h"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wignored-qualifiers"
+#include "Geometry/Geometry.h"
+#pragma GCC diagnostic pop
 #include "Geometry/CryostatGeo.h"
 #include "Geometry/TPCGeo.h"
 #include "Geometry/PlaneGeo.h"
@@ -96,6 +99,7 @@ private:
   std::ofstream ht_file_;
   std::ofstream di_file_;
   std::ofstream pu_file_;
+  geo::Geometry* geom_;
 };
 
 std::string makeName(std::string const& pre, std::string const& rest)
@@ -134,7 +138,8 @@ lariat::ParaviewExtract::ParaviewExtract(fhicl::ParameterSet const & pset) :
   sp_file_(sp_name_.c_str()),
   ht_file_(ht_name_.c_str()),
   di_file_(di_name_.c_str()),
-  pu_file_(pu_name_.c_str())
+  pu_file_(pu_name_.c_str()),
+  geom_()
 {
   std::cerr << "In module ctor\n";
   checkFile(po_file_, po_name_);
@@ -154,8 +159,11 @@ lariat::ParaviewExtract::ParaviewExtract(fhicl::ParameterSet const & pset) :
   sp_file_ << "eid/I,type/S,id/I,x/F,y/F,z/F,errx/F,erry/F,errz/F\n";
   ht_file_ << "eid/I,type/S,id/I,peaktime/F,chan/F,peakamp/F,sumadc/F,view/I,wire/S\n";
   // add di and pu
-  di_file_ << "eid/I,type/S,channel/I,samples/I,ped/F,sigma/F\n";
+  di_file_ << "eid/I,type/S,channel/I,plane/I,wireindex/I,wiresz/I,samples/I,ped/F,sigma/F\n";
   pu_file_ << "eid/I,type/S,channel/I,samples/I,pmtframe/I\n";
+
+  art::ServiceHandle<geo::Geometry> geom;
+  geom_ = &(*geom);
 }
 
 lariat::ParaviewExtract::~ParaviewExtract()
@@ -237,7 +245,12 @@ void lariat::ParaviewExtract::processDigits(art::Event const& e, std::string con
 
   for( auto const& it:(*digits) )
     {
-      di_file_ << eid <<','<< label <<','<< it.Channel()
+      std::vector<geo::WireID> wireids = geom_->ChannelToWire(it.Channel());
+      auto plane_id = wireids[0].planeID();
+      auto wire_idx = wireids[0].Wire;
+
+      di_file_ << eid <<','<< label <<','<< it.Channel() 
+               <<','<< plane_id.Plane <<','<< wire_idx <<','<< wireids.size()
 	       <<','<< it.Samples() <<','<< it.GetPedestal() <<','<< it.GetSigma()
 	;
 
@@ -247,6 +260,13 @@ void lariat::ParaviewExtract::processDigits(art::Event const& e, std::string con
 	}
       di_file_ << "\n";
     }
+
+#if 0
+       std::vector<geo::WireID> wireids = geo->ChannelToWire(channel);
+       for(auto const& wid : wireids){
+         // check that the plane and tpc are the correct ones to draw
+         if (wid.planeID() != pid) continue;
+#endif
 
 #if 0
   auto pulses = e.getValidHandle< std::vector<raw::OpDetPulse>>(label);
@@ -271,7 +291,6 @@ void lariat::ParaviewExtract::analyze(art::Event const & e)
 {
 #if 0
    rdu::TriggerDigitUtility tdu(evt, fTriggerUtility);
-   art::ServiceHandle<geo::Geometry> geom;
    art::ServiceHandle<util::LArProperties> larprop;
    art::ServiceHandle<util::DetectorProperties> detprop;
    art::ServiceHandle<cheat::BackTracker> bt;

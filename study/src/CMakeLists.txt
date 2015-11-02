@@ -45,7 +45,30 @@ cet_set_compiler_flags(DIAGS VIGILANT
  
 cet_report_compiler_flags()
 
+# ------- vtk
+find_package(VTK REQUIRED)
+include(${VTK_USE_FILE})
+
+add_executable(ParticleReader MACOSX_BUNDLE ParticleReader)
+add_executable(WriteVTP MACOSX_BUNDLE WriteVTP)
+add_executable(WriteVTI MACOSX_BUNDLE WriteVTI)
+add_executable(ConvertWaveform MACOSX_BUNDLE ConvertWaveform)
+
+if(VTK_LIBRARIES)
+  target_link_libraries(ParticleReader ${VTK_LIBRARIES})
+  target_link_libraries(WriteVTP ${VTK_LIBRARIES})
+  target_link_libraries(WriteVTI ${VTK_LIBRARIES})
+  target_link_libraries(ConvertWaveform ${VTK_LIBRARIES})
+else()
+  target_link_libraries(ParticleReader vtkHybrid vtkWidgets)
+  target_link_libraries(WriteVTP vtkHybrid vtkWidgets)
+  target_link_libraries(WriteVTI vtkHybrid vtkWidgets)
+  target_link_libraries(ConvertWaveform vtkHybrid vtkWidgets)
+endif()
+# ------- vtk
+
 # these are minimum required versions, not the actual product versions
+find_ups_product( uboonecode v0_00_00 )
 find_ups_product( art v1_15_02 )
 find_ups_product( cetbuildtools v4_16_00 )
 find_ups_product( fhiclcpp v3_06_01 )
@@ -95,5 +118,6 @@ include(BuildPlugins)
 # packaging utility
 include(UseCPack)
 
-simple_plugin(ParaviewExtract       "module")
+simple_plugin(ParaviewExtract       "module" NO_INSTALL 
+  art_Framework_Services_Registry Geometry UBooNEGeometryHelper_service)
 

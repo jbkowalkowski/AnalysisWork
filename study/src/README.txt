@@ -1,6 +1,19 @@
 
+Example runs: 
+lar -c extract_paraview.fcl -n 1 merged.root 
+lar -c extract_raw.fcl -n 1 TestRun-15-0_v1.root 
+lar -c eventdump.fcl -n 1 TestRun-15-0_v1.root
+lar -c eventdump.fcl -n 1 merged.root
+
+lar -c extract_raw.fcl -n 1 --nskip 1 Run3469_7.root
+ConvertWaveform testrun_di.csv e28734
+
 original file name ~/prodgenie_bnb_nu_uboone_0_20150625T181403_gen_818f6788-2a5f-4129-aa78-d5f3f67294c4_20150625T230126_g4_20150627T184331_detsim_20150629T042149_reco1_20150629T230801_reco2_20150701T082906_merged.root 
 
+Some of these files are just the VTK examples:
+WriteVTI.cxx
+WriteVTP.cxx
+ParticleReader.cxx
 
 Begin processing the 1st record. run: 1 subRun: 1085 event: 54201 at
 22-Oct-2015 19:50:47 CDT
