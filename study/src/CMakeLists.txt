@@ -53,17 +53,20 @@ add_executable(ParticleReader MACOSX_BUNDLE ParticleReader)
 add_executable(WriteVTP MACOSX_BUNDLE WriteVTP)
 add_executable(WriteVTI MACOSX_BUNDLE WriteVTI)
 add_executable(ConvertWaveform MACOSX_BUNDLE ConvertWaveform)
+add_executable(ConvertNova MACOSX_BUNDLE ConvertNova)
 
 if(VTK_LIBRARIES)
   target_link_libraries(ParticleReader ${VTK_LIBRARIES})
   target_link_libraries(WriteVTP ${VTK_LIBRARIES})
   target_link_libraries(WriteVTI ${VTK_LIBRARIES})
   target_link_libraries(ConvertWaveform ${VTK_LIBRARIES})
+  target_link_libraries(ConvertNova ${VTK_LIBRARIES})
 else()
   target_link_libraries(ParticleReader vtkHybrid vtkWidgets)
   target_link_libraries(WriteVTP vtkHybrid vtkWidgets)
   target_link_libraries(WriteVTI vtkHybrid vtkWidgets)
   target_link_libraries(ConvertWaveform vtkHybrid vtkWidgets)
+  target_link_libraries(ConvertNova vtkHybrid vtkWidgets)
 endif()
 # ------- vtk
 
@@ -120,4 +123,12 @@ include(UseCPack)
 
 simple_plugin(ParaviewExtract       "module" NO_INSTALL 
   art_Framework_Services_Registry Geometry UBooNEGeometryHelper_service)
+
+cet_make_exec(fhicl_test
+  SOURCE fhicl_test.cc
+  LIBRARIES
+  fhiclcpp
+  cetlib ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  )
+
 
