@@ -24,7 +24,9 @@
 #include "SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wignored-qualifiers"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include "Geometry/Geometry.h"
+#include "Filters/ChannelFilter.h"
 #pragma GCC diagnostic pop
 #include "Geometry/CryostatGeo.h"
 #include "Geometry/TPCGeo.h"
@@ -46,7 +48,6 @@
 // #include "RawDataUtilities/TriggerDigitUtility.h" 
 // #include "MCCheater/BackTracker.h"
 #include "Simulation/SimChannel.h"
-#include "Filters/ChannelFilter.h"
 
 // ROOT includes
 #include "TComplex.h"

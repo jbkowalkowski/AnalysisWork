@@ -54,7 +54,8 @@ int main(int argc, char *argv[])
 
   std::string filename_in = argv[1];
   std::string filename_out = argv[2];
-  string filename_out_uv = filename_out + "_UV.vti";
+  string filename_out_u = filename_out + "_U.vti";
+  string filename_out_v = filename_out + "_V.vti";
   string filename_out_y = filename_out + "_Y.vti";
 
   // read the raw digits in
@@ -123,18 +124,22 @@ and V planes to be collected by the Y plane.
   size_t dim_UV_y = 2400, dim_Y_y = 3456;
   size_t dim_UVY_x = wfs[0].adcs.size();
 
-  vtkSmartPointer<vtkImageData> imageData_uv =
+  vtkSmartPointer<vtkImageData> imageData_u =
+    vtkSmartPointer<vtkImageData>::New();
+  vtkSmartPointer<vtkImageData> imageData_v =
     vtkSmartPointer<vtkImageData>::New();
   vtkSmartPointer<vtkImageData> imageData_y =
     vtkSmartPointer<vtkImageData>::New();
 
   // only two dimensions: (whick sample, which_wire)
-  imageData_uv->SetDimensions(dim_UVY_x,dim_UV_y,2);
-  imageData_uv->AllocateScalars(VTK_SHORT, 1);
+  imageData_u->SetDimensions(dim_UVY_x,dim_UV_y,1);
+  imageData_u->AllocateScalars(VTK_SHORT, 1);
+  imageData_v->SetDimensions(dim_UVY_x,dim_UV_y,1);
+  imageData_v->AllocateScalars(VTK_SHORT, 1);
   imageData_y->SetDimensions(dim_UVY_x,dim_Y_y,1);
   imageData_y->AllocateScalars(VTK_SHORT, 1);
 
-  int* dims = imageData_uv->GetDimensions();
+  int* dims = imageData_u->GetDimensions();
 
   for (int wire = 0; wire < dims[1];++wire)
     {
@@ -143,9 +148,9 @@ and V planes to be collected by the Y plane.
       for (int sample = 0; sample < dims[0];++sample)
 	{
 	  short* pixel_u=
-	    static_cast<short*>(imageData_uv->GetScalarPointer(sample,wire,0));
+	    static_cast<short*>(imageData_u->GetScalarPointer(sample,wire,0));
 	  short* pixel_v=
-	    static_cast<short*>(imageData_uv->GetScalarPointer(sample,wire,1));
+	    static_cast<short*>(imageData_v->GetScalarPointer(sample,wire,0));
 	  *pixel_u = wf_u.adcs[sample];
 	  *pixel_v = wf_v.adcs[sample];
       }
@@ -166,8 +171,12 @@ and V planes to be collected by the Y plane.
   vtkSmartPointer<vtkXMLImageDataWriter> writer =
     vtkSmartPointer<vtkXMLImageDataWriter>::New();
 
-  writer->SetFileName(filename_out_uv.c_str());
-  writer->SetInputData(imageData_uv);
+  writer->SetFileName(filename_out_u.c_str());
+  writer->SetInputData(imageData_u);
+  writer->Write();
+
+  writer->SetFileName(filename_out_v.c_str());
+  writer->SetInputData(imageData_v);
   writer->Write();
 
   writer->SetFileName(filename_out_y.c_str());
