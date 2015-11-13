@@ -10,6 +10,9 @@
 #include <vtkRenderWindow.h>
 #include <vtkActor.h>
 #include <vtkPolyDataMapper.h>
+#include <vtkShortArray.h>
+#include <vtkPointData.h>
+#include <vtkCellData.h>
 
 #include <fstream>
 #include <sstream>
@@ -30,6 +33,17 @@ struct Waveform
     int samples;
     adcs.reserve(10000);
     ist >> eid >> type >> channel >> plane >> wireindex >> wiresz >> samples >> ped >> sigma;
+
+    short val;
+    while(!(ist>>val).eof()) adcs.push_back(val);
+
+    vector<short> samp(adcs);
+    size_t half=samp.size()/2;
+    //cerr << "half=" << half << "\n";
+    std::nth_element(samp.begin(),samp.begin()+half, samp.end());
+    median=samp[half];
+    low= (half==0)?median:samp[half-1] - median;
+    high= (half==samp.size()-1)?median:samp[half+1] - median;
   }
 
   string type;
@@ -40,6 +54,8 @@ struct Waveform
   int eid;
   float ped;
   vector<short> adcs;
+  short median;
+  short high,low;
 };
 typedef vector<Waveform> Waveforms;
 
@@ -96,8 +112,6 @@ and V planes to be collected by the Y plane.
       // split the line up
       istringstream iline(line);
       Waveform wf(iline);
-      short val;
-      while(!(iline>>val).eof()) wf.adcs.push_back(val);
       wfs.push_back(wf);
     }
 
@@ -122,7 +136,7 @@ and V planes to be collected by the Y plane.
 
   // dim_planes_axis
   size_t dim_UV = 2400, dim_Y = 3456;
-  size_t dim_S = wfs[0].adcs.size();
+  size_t dim_S = wfs[0].adcs.size()/4;
 
   vtkSmartPointer<vtkImageData> imageData_u =
     vtkSmartPointer<vtkImageData>::New();
@@ -132,9 +146,12 @@ and V planes to be collected by the Y plane.
     vtkSmartPointer<vtkImageData>::New();
 
   // only two dimensions: (whick sample, which_wire)
-  imageData_u->SetDimensions(dim_UV+1,2,dim_S+1);
-  imageData_v->SetDimensions(dim_UV+1,2,dim_S+1);
-  imageData_y->SetDimensions(dim_Y+1,2,dim_S+1);
+  imageData_u->SetDimensions(dim_UV,dim_S,1);
+  imageData_v->SetDimensions(dim_UV,dim_S,1);
+  imageData_y->SetDimensions(dim_Y,dim_S,1);
+  //imageData_u->SetDimensions(dim_UV+1,dim_S+1,2);
+  //imageData_v->SetDimensions(dim_UV+1,dim_S+1,2);
+  //imageData_y->SetDimensions(dim_Y+1,dim_S+1,2);
 
   vtkSmartPointer<vtkShortArray> energy_u =
     vtkSmartPointer<vtkShortArray>::New();
@@ -158,53 +175,59 @@ and V planes to be collected by the Y plane.
 
   auto flat_index_uv = [&](int i,int j, int k)
     {
-      auto a = k*(dim_UV*1)+j*dim_UV+i;
+      auto a = k*(dim_UV*dim_S)+j*dim_UV+i;
       //cout << "y index " << a << "\n";
       return a;
     };
   auto flat_index_y = [&](int i,int j, int k)
     {
-      auto a = k*(dim_Y*1)+j*dim_Y+i;
+      auto a = k*(dim_Y*dim_S)+j*dim_Y+i;
       //cout << "x index " << a << "\n";
       return a;
     };
   
   int* dims = imageData_u->GetDimensions();
+  cout << "dim uv = " << dims[0] << " " << dims[1] << " " << dims[2] << "\n";
 
-  for (int wire = 0; wire < dims[1];++wire)
+  for (size_t wire = 0; wire < dim_UV;++wire)
     {
       Waveform& wf_u = *(wfsp[wire]);
       Waveform& wf_v = *(wfsp[wire+dim_UV]);
 
-      for (int sample = 0; sample < dims[0];++sample)
+      for (size_t sample = 0; sample < dim_S;++sample)
 	{
-	  short au = wf_u.adcs[sample];
-	  short av = wf_v.adcs[sample];
+	  short au = wf_u.adcs[sample] - wf_u.median;
+	  short av = wf_v.adcs[sample] - wf_v.median;
+	  au=(au<wf_u.high && au>wf_u.low)?0:au;
+	  av=(av<wf_v.high && av>wf_v.low)?0:av;
 	  
-	  auto u = flat_index_uv(wire,0,sample);
+	  auto u = flat_index_uv(wire,sample,0);
 	  energy_u->SetTupleValue(u,&au);
-	  auto v = flat_index_uv(wire,0,sample);
+	  auto v = flat_index_uv(wire,sample,0);
 	  energy_v->SetTupleValue(v,&av);
       }
     }
 
   dims = imageData_y->GetDimensions();
+  cout << "dim y = " << dims[0] << " " << dims[1] << " " << dims[2] << "\n";
 
-  for(int wire=0;wire<dims[1];++wire)
+  for(size_t wire=0;wire<dim_Y;++wire)
     {
       Waveform& wf_y = *(wfsp[wire+dim_UV*2]);
 
-      for (int sample = 0; sample < dims[0];++sample)
+      for (size_t sample = 0; sample < dim_S;++sample)
 	{
-	  short ay = wf_y.adcs[sample];
-	  auto y = flat_index_y(wire,0,sample);
+	  short ay = wf_y.adcs[sample] - wf_y.median;
+	  ay=(ay<wf_y.high && ay>wf_y.low)?0:ay;
+
+	  auto y = flat_index_y(wire,sample,0);
 	  energy_y->SetTupleValue(y,&ay);
       }
     }
 
-  auto u_cells = imageData_u->GetCellData();
-  auto v_cells = imageData_v->GetCellData();
-  auto y_cells = imageData_y->GetCellData();
+  auto u_cells = imageData_u->GetPointData();
+  auto v_cells = imageData_v->GetPointData();
+  auto y_cells = imageData_y->GetPointData();
 
   u_cells->AddArray(energy_u);
   v_cells->AddArray(energy_v);
