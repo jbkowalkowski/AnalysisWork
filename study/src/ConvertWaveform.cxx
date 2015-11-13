@@ -121,8 +121,8 @@ and V planes to be collected by the Y plane.
 #endif
 
   // dim_planes_axis
-  size_t dim_UV_y = 2400, dim_Y_y = 3456;
-  size_t dim_UVY_x = wfs[0].adcs.size();
+  size_t dim_UV = 2400, dim_Y = 3456;
+  size_t dim_S = wfs[0].adcs.size();
 
   vtkSmartPointer<vtkImageData> imageData_u =
     vtkSmartPointer<vtkImageData>::New();
@@ -132,41 +132,88 @@ and V planes to be collected by the Y plane.
     vtkSmartPointer<vtkImageData>::New();
 
   // only two dimensions: (whick sample, which_wire)
-  imageData_u->SetDimensions(dim_UVY_x,dim_UV_y,1);
-  imageData_u->AllocateScalars(VTK_SHORT, 1);
-  imageData_v->SetDimensions(dim_UVY_x,dim_UV_y,1);
-  imageData_v->AllocateScalars(VTK_SHORT, 1);
-  imageData_y->SetDimensions(dim_UVY_x,dim_Y_y,1);
-  imageData_y->AllocateScalars(VTK_SHORT, 1);
+  imageData_u->SetDimensions(dim_UV+1,2,dim_S+1);
+  imageData_v->SetDimensions(dim_UV+1,2,dim_S+1);
+  imageData_y->SetDimensions(dim_Y+1,2,dim_S+1);
 
+  vtkSmartPointer<vtkShortArray> energy_u =
+    vtkSmartPointer<vtkShortArray>::New();
+  energy_u->SetName("energy");
+  energy_u->Resize(dim_UV*dim_S);
+  energy_u->SetNumberOfValues(dim_UV*dim_S);
+
+  vtkSmartPointer<vtkShortArray> energy_v = 
+    vtkSmartPointer<vtkShortArray>::New();
+  energy_v->SetName("energy");
+  energy_v->Resize(dim_UV*dim_S);
+  energy_v->SetNumberOfValues(dim_UV*dim_S);
+
+  vtkSmartPointer<vtkShortArray> energy_y = 
+    vtkSmartPointer<vtkShortArray>::New();
+  energy_y->SetName("energy");
+  energy_y->Resize(dim_Y*dim_S);
+  energy_y->SetNumberOfValues(dim_Y*dim_S);
+
+  // (i,j,k) idx_flat=k*(nptsx*nptsy)+j*nptrx+i
+
+  auto flat_index_uv = [&](int i,int j, int k)
+    {
+      auto a = k*(dim_UV*1)+j*dim_UV+i;
+      //cout << "y index " << a << "\n";
+      return a;
+    };
+  auto flat_index_y = [&](int i,int j, int k)
+    {
+      auto a = k*(dim_Y*1)+j*dim_Y+i;
+      //cout << "x index " << a << "\n";
+      return a;
+    };
+  
   int* dims = imageData_u->GetDimensions();
 
   for (int wire = 0; wire < dims[1];++wire)
     {
       Waveform& wf_u = *(wfsp[wire]);
-      Waveform& wf_v = *(wfsp[wire+dim_UV_y]);
+      Waveform& wf_v = *(wfsp[wire+dim_UV]);
+
       for (int sample = 0; sample < dims[0];++sample)
 	{
-	  short* pixel_u=
-	    static_cast<short*>(imageData_u->GetScalarPointer(sample,wire,0));
-	  short* pixel_v=
-	    static_cast<short*>(imageData_v->GetScalarPointer(sample,wire,0));
-	  *pixel_u = wf_u.adcs[sample];
-	  *pixel_v = wf_v.adcs[sample];
+	  short au = wf_u.adcs[sample];
+	  short av = wf_v.adcs[sample];
+	  
+	  auto u = flat_index_uv(wire,0,sample);
+	  energy_u->SetTupleValue(u,&au);
+	  auto v = flat_index_uv(wire,0,sample);
+	  energy_v->SetTupleValue(v,&av);
       }
     }
 
   dims = imageData_y->GetDimensions();
+
   for(int wire=0;wire<dims[1];++wire)
     {
-      Waveform& wf_y = *(wfsp[wire+dim_UV_y*2]);
+      Waveform& wf_y = *(wfsp[wire+dim_UV*2]);
+
       for (int sample = 0; sample < dims[0];++sample)
 	{
-	  short* pixel_y=
-	    static_cast<short*>(imageData_y->GetScalarPointer(sample,wire,0));
-	  *pixel_y = wf_y.adcs[sample];
+	  short ay = wf_y.adcs[sample];
+	  auto y = flat_index_y(wire,0,sample);
+	  energy_y->SetTupleValue(y,&ay);
       }
     }
+
+  auto u_cells = imageData_u->GetCellData();
+  auto v_cells = imageData_v->GetCellData();
+  auto y_cells = imageData_y->GetCellData();
+
+  u_cells->AddArray(energy_u);
+  v_cells->AddArray(energy_v);
+  y_cells->AddArray(energy_y);
+
+  std::cout << "u Points: " << imageData_u->GetNumberOfPoints() << "\n";
+  std::cout << "u Cells: " << imageData_u->GetNumberOfCells() << "\n";
+  std::cout << "y Points: " << imageData_y->GetNumberOfPoints() << "\n";
+  std::cout << "y Cells: " << imageData_y->GetNumberOfCells() << "\n";
   
   vtkSmartPointer<vtkXMLImageDataWriter> writer =
     vtkSmartPointer<vtkXMLImageDataWriter>::New();
