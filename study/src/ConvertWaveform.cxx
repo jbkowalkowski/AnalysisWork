@@ -40,10 +40,11 @@ struct Waveform
     vector<short> samp(adcs);
     size_t half=samp.size()/2;
     //cerr << "half=" << half << "\n";
-    std::nth_element(samp.begin(),samp.begin()+half, samp.end());
+    //std::nth_element(samp.begin(),samp.begin()+half, samp.end());
+    std::sort(samp.begin(),samp.end());
     median=samp[half];
-    low= (half==0)?median:samp[half-1] - median;
-    high= (half==samp.size()-1)?median:samp[half+1] - median;
+    low= (half==0)?median:samp[half-2] - median;
+    high= (half==samp.size()-1)?median:samp[half+2] - median;
   }
 
   string type;
