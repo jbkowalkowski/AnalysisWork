@@ -119,37 +119,37 @@ int main(int argc, char *argv[])
   auto flat_index_y = [&](int i,int j, int k)
     {
       auto a = k*(1*256)+j*1+i;
-      cout << "y index " << a << "\n";
+      // cout << "y index " << a << "\n";
       return a;
     };
   auto flat_index_x = [&](int i,int j, int k)
     {
       auto a = k*(256*1)+j*256+i;
-      cout << "x index " << a << "\n";
+      //  cout << "x index " << a << "\n";
       return a;
     };
 
   for(size_t i=0;i<wfs.size();++i)
     {
       float tmp = wfs[i].energy+1.0;
-      if(i%2==1)
+      if(i%2==0)
 	{
 	  auto u=flat_index_x(wfs[i].x,0,wfs[i].z);
 	  energy_x->SetTupleValue(u,&tmp);
-	  auto v=flat_index_x(wfs[i].x,1,wfs[i].z);
-	  energy_x->SetTupleValue(v,&tmp);
+	  //auto v=flat_index_x(wfs[i].x,1,wfs[i].z);
+	  //energy_x->SetTupleValue(v,&tmp);
 	}
       else
 	{
 	  auto u=flat_index_y(0,wfs[i].y,wfs[i].z);
 	  energy_y->SetTupleValue(u,&tmp);
-	  auto v=flat_index_y(1,wfs[i].y,wfs[i].z);
-	  energy_y->SetTupleValue(v,&tmp);
+	  //auto v=flat_index_y(1,wfs[i].y,wfs[i].z);
+	  //energy_y->SetTupleValue(v,&tmp);
 	}
     }
 
-  cout << "y cell type = " << grid_x->GetCellType(flat_index_y(1,4,5)) << "\n";
-  cout << "x cell type = " << grid_y->GetCellType(flat_index_x(1,4,5)) << "\n";
+  //cout << "y cell type = " << grid_x->GetCellType(flat_index_y(1,4,5)) << "\n";
+  //cout << "x cell type = " << grid_y->GetCellType(flat_index_x(1,4,5)) << "\n";
 #endif
 
   auto x_cells = grid_x->GetCellData();
