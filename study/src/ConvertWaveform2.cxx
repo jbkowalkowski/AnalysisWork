@@ -10,10 +10,11 @@
 #include <vtkImageDataGeometryFilter.h>
 #include <vtkRenderWindow.h>
 #include <vtkActor.h>
-#include <vtkPolyDataWriter.h>
+#include <vtkXMLPolyDataWriter.h>
 #include <vtkShortArray.h>
 #include <vtkPointData.h>
 #include <vtkCellData.h>
+#include <vtkCellArray.h>
 
 #include <fstream>
 #include <sstream>
@@ -38,16 +39,6 @@ struct Waveform
     short val;
     while(!(ist>>val).eof()) adcs.push_back(val);
 
-    vector<short> samp(adcs);
-    size_t half=samp.size()/2;
-    //cerr << "half=" << half << "\n";
-    //std::nth_element(samp.begin(),samp.begin()+half, samp.end());
-    std::sort(samp.begin(),samp.end());
-    median=samp[half];
-
-    const size_t dist = samp.size()*.49;
-    low=  samp[half-dist] - median;
-    high= samp[half+dist] - median;
   }
 
   string type;
@@ -58,14 +49,34 @@ struct Waveform
   int eid;
   float ped;
   vector<short> adcs;
-  short median;
-  short high,low;
 };
 typedef vector<Waveform> Waveforms;
 
+#if 1
+short calc_median(Waveform** wfsp, size_t dim_S, size_t dim)
+{
+  // const double get_rid = .49;
+  std::vector<short> all_plane;
+  all_plane.reserve(3500*10000);
+  cout << "generating median" << std::endl;
+
+  for(size_t wire=0;wire<dim;++wire)
+  {
+      Waveform& wfa = *(wfsp[wire]);
+      for(size_t sample=0;sample<dim_S;++sample)
+        all_plane.push_back(wfa.adcs[sample]);
+  }
+
+  sort(all_plane.begin(),all_plane.end());
+  auto all_half_u = all_plane.size()/2;
+  auto all_median_u = all_plane[all_half_u];
+  return all_median_u;
+}
+#endif
+
 void gen_points(vtkSmartPointer<vtkXMLPolyDataWriter>& writer,
 		std::string const& filename,
-		Waveform* wfsp, size_t dim_S, size_t dim)
+		Waveform** wfsp, size_t dim_S, size_t dim)
 {
   
   // Positions and cells
@@ -77,8 +88,10 @@ void gen_points(vtkSmartPointer<vtkXMLPolyDataWriter>& writer,
     vtkSmartPointer<vtkShortArray>::New();
 
   energy->SetName("energy");
-  energy->Resize(dim*dim_S);
-  energy->SetNumberOfValues(dim*dim_S);
+  //energy->Resize(dim*dim_S);
+  //energy->SetNumberOfValues(dim*dim_S);
+
+  short median = calc_median(wfsp, dim_S, dim);
 
   for (size_t wire = 0; wire < dim;++wire)
     {
@@ -86,9 +99,9 @@ void gen_points(vtkSmartPointer<vtkXMLPolyDataWriter>& writer,
 
       for (size_t sample = 0; sample < dim_S;++sample)
 	{
-	  short au = wf_u.adcs[sample];
-	  pts->InsertNextPoint(wire,sample,0);
+	  short au = wf_u.adcs[sample] - median;
 	  vtkIdType pid[1];
+	  pid[0]=pts->InsertNextPoint(wire,sample,0);
 	  verts->InsertNextCell(1,pid);
 	  energy->InsertNextValue(au);	    
 	}
@@ -119,9 +132,9 @@ int main(int argc, char *argv[])
 
   std::string filename_in = argv[1];
   std::string filename_out = argv[2];
-  string filename_out_u = filename_out + "_U.vti";
-  string filename_out_v = filename_out + "_V.vti";
-  string filename_out_y = filename_out + "_Y.vti";
+  string filename_out_u = filename_out + "_U.vtp";
+  string filename_out_v = filename_out + "_V.vtp";
+  string filename_out_y = filename_out + "_Y.vtp";
 
   // read the raw digits in
   std::ifstream fin(filename_in.c_str());
