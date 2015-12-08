@@ -2,7 +2,7 @@
 # fully annotated product_deps file.
 
 # Product specification
-parent uboonecode v4_21_00
+parent uboonecode v4_26_03_01
 defaultqual e7
 
 # Table-file variable setup specification.
@@ -12,7 +12,7 @@ bindir      fq_dir      bin
 
 # define product/version pairs
 product		version
-uboonecode	v04_21_00
+uboonecode	v04_26_03_01
 art	v1_15_02
 cetbuildtools	v4_16_00	-	only_for_build
 end_product_list
