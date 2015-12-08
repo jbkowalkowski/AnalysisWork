@@ -53,7 +53,7 @@ struct Waveform
 typedef vector<Waveform> Waveforms;
 
 #if 1
-short calc_median(Waveform** wfsp, size_t dim_S, size_t dim)
+short calc_median(Waveform** wfsp, size_t dim_S, size_t dim, double band, short& out_low, short& out_high)
 {
   // const double get_rid = .49;
   std::vector<short> all_plane;
@@ -69,7 +69,11 @@ short calc_median(Waveform** wfsp, size_t dim_S, size_t dim)
 
   sort(all_plane.begin(),all_plane.end());
   auto all_half_u = all_plane.size()/2;
+  auto all_pos = all_half_u * band;
   auto all_median_u = all_plane[all_half_u];
+  out_low = all_plane[all_half_u - all_pos];
+  out_high = all_plane[all_half_u + all_pos];
+  cout << out_low << " " << all_median_u << " " << out_high << "\n";
   return all_median_u;
 }
 #endif
@@ -78,7 +82,7 @@ void gen_points(vtkSmartPointer<vtkXMLPolyDataWriter>& writer,
 		std::string const& filename,
 		Waveform** wfsp, size_t dim_S, size_t dim)
 {
-  
+  std::cout << "Gen_points called\n";
   // Positions and cells
   vtkSmartPointer<vtkPoints> pts =
     vtkSmartPointer<vtkPoints>::New();
@@ -91,29 +95,41 @@ void gen_points(vtkSmartPointer<vtkXMLPolyDataWriter>& writer,
   //energy->Resize(dim*dim_S);
   //energy->SetNumberOfValues(dim*dim_S);
 
-  short median = calc_median(wfsp, dim_S, dim);
+  short low, high;
+  short median = calc_median(wfsp, dim_S, dim,.01, low, high);
+  std::vector<vtkIdType> pid;
+  pid.reserve(dim_S);
 
   for (size_t wire = 0; wire < dim;++wire)
     {
       Waveform& wf_u = *(wfsp[wire]);
+      pid.clear();
+
 
       for (size_t sample = 0; sample < dim_S;++sample)
 	{
 	  short au = wf_u.adcs[sample] - median;
-	  vtkIdType pid[1];
-	  pid[0]=pts->InsertNextPoint(wire,sample,0);
-	  verts->InsertNextCell(1,pid);
+          if(au<(high-median) && au>(low-median)) continue;
+          if(au>250 || au<-250) continue;
+	  // vtkIdType pid[1];
+	  // pid[0]=pts->InsertNextPoint(wire,sample,0);
+	  pid.push_back(pts->InsertNextPoint(wire,sample,0));
+	  // verts->InsertNextCell(1,pid);
 	  energy->InsertNextValue(au);	    
 	}
+      verts->InsertNextCell(pid.size(),&pid[0]);
     }
 
   // Create a polydata
+  std::cout << "Create polydata\n";
   vtkSmartPointer<vtkPolyData> polydata = 
     vtkSmartPointer<vtkPolyData>::New();
   polydata->SetPoints ( pts );
   polydata->SetVerts ( verts );
+  // polydata->SetLines ( verts );
   polydata->GetPointData()->AddArray(energy);
 
+  std::cout << "Write polydata\n";
   writer->SetFileName(filename.c_str());
   writer->SetInputData(polydata);
   writer->Write();
@@ -177,6 +193,7 @@ and V planes to be collected by the Y plane.
       wfs.push_back(wf);
     }
 
+  std::cout << "finished reading points\n";
   vector<Waveform*> wfsp;
   for(size_t i=0;i<wfs.size();++i) { wfsp.push_back(&wfs[i]); }
   sort(wfsp.begin(), wfsp.end(),
@@ -187,6 +204,7 @@ and V planes to be collected by the Y plane.
                false;}
        );
 
+  std::cout << "finished sorting points\n";
   // dim_planes_axis
   size_t dim_UV = 2400, dim_Y = 3456;
   size_t dim_S = wfs[0].adcs.size(); // /4;
