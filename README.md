@@ -2,6 +2,7 @@
 
 Contained here are demonstrations, examples, and prototypes 
 for various activities that I've been involved in.
+See the (wiki)[Analysis-work] pages for more details.
 
 ## lariat
 
