@@ -109,8 +109,8 @@ void gen_points(vtkSmartPointer<vtkXMLPolyDataWriter>& writer,
       for (size_t sample = 0; sample < dim_S;++sample)
 	{
 	  short au = wf_u.adcs[sample] - median;
-          if(au<(high-median) && au>(low-median)) continue;
-          if(au>250 || au<-250) continue;
+          // if(au<(high-median) && au>(low-median)) continue;
+          // if(au>250 || au<-250) continue;
 	  // vtkIdType pid[1];
 	  // pid[0]=pts->InsertNextPoint(wire,sample,0);
 	  pid.push_back(pts->InsertNextPoint(wire,sample,0));
@@ -125,8 +125,8 @@ void gen_points(vtkSmartPointer<vtkXMLPolyDataWriter>& writer,
   vtkSmartPointer<vtkPolyData> polydata = 
     vtkSmartPointer<vtkPolyData>::New();
   polydata->SetPoints ( pts );
-  polydata->SetVerts ( verts );
-  // polydata->SetLines ( verts );
+  // polydata->SetVerts ( verts );
+  polydata->SetLines ( verts );
   polydata->GetPointData()->AddArray(energy);
 
   std::cout << "Write polydata\n";
