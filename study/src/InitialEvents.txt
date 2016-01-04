@@ -1,0 +1,40 @@
+
+from paper:
+On-beam: 3455, 3456, 3457, 3468, 3469, 3470, 3471, 3472, 3475, 3476,
+3493, 3494
+
+/pnfs/uboone/persistent/users/uboonepro/data_nuid/v04_26_02
+/pnfs/uboone/persistent/users/uboonepro/data_nuid/v04_26_02/nuid_v5_swizzle_run3476
+
+Run 3476 Event 61221, 15901
+Run 3493 Event 41075
+Run 3470 Event 29328, 6593
+Run 3469 Event 28734
+
+4978372_122/PhysicsRun-2015_10_22_6_34_12-0003476-01225_20151023T011249_rawfilter.root
+
+Transferred this one: 
+ /pnfs/uboone/persistent/users/uboonepro/data_nuid/v04_26_02/nuid_v5_swizzle_run3476/4978372_122
+
+Converted the names: 
+mv PhysicsRun-2015_10_22_6_34_12-0003476-01217_20151023T002412_rawfilter.root Run3476_0.root
+mv PhysicsRun-2015_10_22_6_34_12-0003476-01218_20151023T003259_rawfilter.root Run3476_1.root
+mv PhysicsRun-2015_10_22_6_34_12-0003476-01219_20151023T004022_rawfilter.root Run3476_2.root
+mv PhysicsRun-2015_10_22_6_34_12-0003476-01220_20151023T004707_rawfilter.root Run3476_3.root
+mv PhysicsRun-2015_10_22_6_34_12-0003476-01221_20151023T005425_rawfilter.root Run3476_4.root
+mv PhysicsRun-2015_10_22_6_34_12-0003476-01222_20151023T005856_rawfilter.root Run3476_5.root
+mv PhysicsRun-2015_10_22_6_34_12-0003476-01223_20151023T010321_rawfilter.root Run3476_6.root
+mv PhysicsRun-2015_10_22_6_34_12-0003476-01224_20151023T010823_rawfilter.root Run3476_7.root
+mv PhysicsRun-2015_10_22_6_34_12-0003476-01225_20151023T011249_rawfilter.root Run3476_8.root
+mv PhysicsRun-2015_10_22_6_34_12-0003476-01226_20151023T011652_rawfilter.root Run3476_9.root
+
+Ran like this: 
+lar -c extract_raw.fcl -n 1 --nskip 1 Run3476_7.root
+ConvertWaveform testrun_di.csv stuff
+
+3235376_57/PhysicsRun-2015_10_21_1_25_15-0003469-00574_20151021T175538_rawfilter.root
+3235376_57/PhysicsRun-2015_10_21_1_25_15-0003469-00575_20151021T175851_rawfilter.root
+3235376_57/PhysicsRun-2015_10_21_1_25_15-0003469-00576_20151021T180158_rawfilter.root
+
+Run3469_7.root has event 28734, it is the second event
+
