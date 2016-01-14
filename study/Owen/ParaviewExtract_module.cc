@@ -81,6 +81,12 @@
 #include <vtkPointData.h>
 #include <vtkCellData.h>
 #include <vtkCellArray.h>
+#include <vtkStringArray.h>
+#include <vtkIntArray.h>
+#include <vtkDoubleArray.h>
+#include <vtkPoints.h>
+#include <vtkPolyLine.h>
+#include <vtkAppendPolyData.h>
 
 using namespace std;
 
@@ -133,7 +139,7 @@ public:
     void analyze(art::Event const & e) override;
     void beginJob();
 private:
-    void processTracks(art::Event const& e, std::string const& label);
+    void processTracks(art::Event const& e, std::string const& label, int const& id, vtkSmartPointer<vtkAppendPolyData>& apd);
 //    void processSP(art::Event const& e, std::string const& label);
     void processDigits(art::Event const& e, std::string const& label);
     short calc_median(Waveform** wfsp, size_t dim_S, size_t dim, double band, short& out_low, short& out_high);
@@ -150,18 +156,6 @@ private:
     std::string filename_out_v;
     std::string filename_out_y;
     std::string filename_out_tr;
-//    std::string po_name_;
-//    std::string tr_name_;
-//    std::string sp_name_;
-//    std::string ht_name_;
-//    std::string di_name_;
-//    std::string pu_name_;
-//    std::ofstream po_file_;
-//    std::ofstream tr_file_;
-//    std::ofstream sp_file_;
-//    std::ofstream ht_file_;
-//    std::ofstream di_file_;
-//    std::ofstream pu_file_;
     geo::Geometry* geom_;
 };
 
@@ -192,40 +186,8 @@ filename_out_u(prefix_ + "U.vti"),
 filename_out_v(prefix_ + "V.vti"),
 filename_out_y(prefix_ + "Y.vti"),
 filename_out_tr(prefix_ + "tracks.vtp"),
-//po_name_(makeName(prefix_, "po")),
-//tr_name_(makeName(prefix_, "tr")),
-//sp_name_(makeName(prefix_, "sp")),
-//ht_name_(makeName(prefix_, "ht")),
-//di_name_(makeName(prefix_, "di")),
-//pu_name_(makeName(prefix_, "pu")),
-//po_file_(po_name_.c_str()),
-//tr_file_(tr_name_.c_str()),
-//sp_file_(sp_name_.c_str()),
-//ht_file_(ht_name_.c_str()),
-//di_file_(di_name_.c_str()),
-//pu_file_(pu_name_.c_str()),
 geom_() {
     std::cerr << "In module ctor\n";
-//    checkFile(po_file_, po_name_);
-//    checkFile(tr_file_, tr_name_);
-//    checkFile(sp_file_, sp_name_);
-//    checkFile(ht_file_, ht_name_);
-//    checkFile(di_file_, di_name_);
-//    checkFile(pu_file_, pu_name_);
-
-    // headers
-    // po = eid type id index x y z dirx diry dirz p
-    // tr = eid type id total x y z dirx diry dirz theta phi
-    // sp = eid type id x y z errx erry errz
-    // hi = eid type tid peaktime chan peakamp sumadc view wire
-//    po_file_ << "eid/I,type/S,id/I,index/I,x/F,y/F,z/F,dirx/F,diry/F,dirz/F,p/F\n";
-//    tr_file_ << "eid/I,type/S,id/I,total/I\n";
-//    sp_file_ << "eid/I,type/S,id/I,x/F,y/F,z/F,errx/F,erry/F,errz/F\n";
-//    ht_file_ << "eid/I,type/S,id/I,peaktime/F,chan/F,peakamp/F,sumadc/F,view/I,wire/S\n";
-//    // add di and pu
-//    di_file_ << "eid/I,type/S,channel/I,plane/I,wireindex/I,wiresz/I,samples/I,ped/F,sigma/F\n";
-//    pu_file_ << "eid/I,type/S,channel/I,samples/I,pmtframe/I\n";
-
     art::ServiceHandle<geo::Geometry> geom;
     geom_ = &(*geom);
 }
@@ -255,34 +217,46 @@ short lariat::ParaviewExtract::calc_median(Waveform** wfsp, size_t dim_S, size_t
     return all_median_u;
 }
 
-void lariat::ParaviewExtract::processTracks(art::Event const& e, std::string const& label) {
+void lariat::ParaviewExtract::processTracks(art::Event const& e, std::string const& label, int const& id, vtkSmartPointer<vtkAppendPolyData>& apd) {
     auto tr = e.getValidHandle< std::vector<recob::Track> >(label); //* to array of tracks
     art::FindMany<recob::Hit> hits_p(tr, e, label); // "pmtrack");
-    auto eid = e.event();
+    //auto eid = e.event();
 
-
+    std::cout << "Processing tracks for algorithm " << label << "\n";
     
+    //CellArray to hold the tracks. Each track is one cell.
     vtkSmartPointer<vtkCellArray> trackCells = 
             vtkSmartPointer<vtkCellArray>::New();
     
+    //Points
     vtkSmartPointer<vtkPoints> points = 
                 vtkSmartPointer<vtkPoints>::New();
     
-    vtkSmartPointer<vtkStringArray> label = 
+    //Attributes
+    //do we need the evend id too?
+    //all the points in this file will be from the same event anyways
+    vtkSmartPointer<vtkStringArray> labels = 
             vtkSmartPointer<vtkStringArray>::New();
-    
-    vtkSmartPointer<vtkIntArray> trackid = 
+    labels->SetName("Algorithm Name");
+    vtkSmartPointer<vtkIntArray> algoids = 
             vtkSmartPointer<vtkIntArray>::New();
-    
-    vtkSmartPointer<vtkIntArray> pointid = 
+    algoids->SetName("Algorithm ID");
+    vtkSmartPointer<vtkIntArray> trackids = 
             vtkSmartPointer<vtkIntArray>::New();
-    
-    vtkSmartPointer<vtkDoubleArray> direction = 
+    trackids->SetName("Track ID");
+    vtkSmartPointer<vtkIntArray> pointids = 
+            vtkSmartPointer<vtkIntArray>::New();
+    pointids->SetName("Point ID");
+    vtkSmartPointer<vtkDoubleArray> directions = 
             vtkSmartPointer<vtkDoubleArray>::New();
+    directions->SetName("Direction");
     directions->SetNumberOfComponents(3);
-    
-    vtkSmartPointer<vtkDoubleArray> momentum = 
+    vtkSmartPointer<vtkDoubleArray> momentums = 
             vtkSmartPointer<vtkDoubleArray>::New(); 
+    momentums->SetName("Momentum");
+    
+    //set the expected size for these attribute arrays?
+    //don't know what to call to find that.
     
     for (size_t i = 0; i < tr->size(); ++i) { //for each track
         auto tid = (*tr)[i].ID(); //track ID
@@ -290,31 +264,20 @@ void lariat::ParaviewExtract::processTracks(art::Event const& e, std::string con
         vtkSmartPointer<vtkPolyLine> trackPolyLine = 
                 vtkSmartPointer<vtkPolyLine>::New();
         
-//        tr_file_ << eid << ',' << label << ',' << tid
-//                << ',' << (*tr)[i].NumberTrajectoryPoints()
-//                << "\n";
 
         if (!write_hits_.empty()) {
             std::vector<recob::Hit const*> hits;
             hits_p.get(i, hits);
-            for (size_t j = 0; j < hits.size(); ++j) { //for each hit algo
-//                ht_file_ << eid << ',' << label << ',' << tid
-//                        << ',' << hits[j]->PeakTime()
-//                        << ',' << hits[j]->Channel()
-//                        << ',' << hits[j]->PeakAmplitude()
-//                        << ',' << hits[j]->SummedADC()
-//                        << ',' << hits[j]->View()
-//                        << ',' << hits[j]->WireID()
-//                        << "\n";
+            for (size_t j = 0; j < hits.size(); ++j) { //for each hit algorithm
+//                hit data output
             }
         }
         
         size_t numTrajPoints = (*tr)[i].NumberTrajectoryPoints();
-        //trackPoly->GetPoints()->SetNumberOfPoints(numTrajPoints);
-        trackPoly->GetPointIds()->SetNumberOfIds(numTrajPoints);
+        trackPolyLine->GetPointIds()->SetNumberOfIds(numTrajPoints);
         std::cerr << "at track processing position " << i << "\n";
         for (size_t j = 0; j < numTrajPoints; ++j) { //for each point on track
-            std::cerr << "at traj processing position " << j << "\n";
+            //std::cerr << "at traj processing position " << j << "\n";
             double pos[3];
             double dir[3];
             (*tr)[i].LocationAtPoint(j).GetXYZ(pos);
@@ -323,32 +286,34 @@ void lariat::ParaviewExtract::processTracks(art::Event const& e, std::string con
             
             //add the point to "points" and the id to the PolyLine
             trackPolyLine->GetPointIds()->SetId(j,points->InsertNextPoint(pos));
-            label->InsertNextValue(label);
-            trackid->InsertNextValue(i);
-            pointid->InsertNextValue(j);
-            direction->InsertNextTuple(dir);
-            momentum->InsertNextValue(p);
             
-            
-
-//            po_file_ << eid << ',' << label << ',' << tid << ',' << j
-//                    << ',' << pos[0] << ',' << pos[1] << ',' << pos[2]
-//                    << ',' << dir[0] << ',' << dir[1] << ',' << dir[2]
-//                    << ',' << p
-//                    << "\n";
+            //add to the data arrays
+            labels->InsertNextValue(label);
+            algoids->InsertNextValue(id);
+            trackids->InsertNextValue(tid);
+            pointids->InsertNextValue(j);
+            directions->InsertNextTuple(dir);
+            momentums->InsertNextValue(p);
         }
+        //add the track to the CellArray
         trackCells->InsertNextCell(trackPolyLine);
     }
     
+    //Assemble the polydata object
     vtkSmartPointer<vtkPolyData> polydata = 
             vtkSmartPointer<vtkPolyData>::New();
     polydata->SetPoints(points);
     polydata->SetLines(trackCells);
-    
-    
-    vtkSmartPointer<vtkXMLPolyDataWriter> writer = 
-            vtkSmartPointer<vtkXMLPolyDataWriter>::New();
-    writer->SetFileName(filename_out_tr);
+    polydata->GetPointData()->AddArray(labels);
+    polydata->GetPointData()->AddArray(algoids);
+    polydata->GetPointData()->AddArray(trackids);
+    polydata->GetPointData()->AddArray(pointids);
+    polydata->GetPointData()->AddArray(directions);
+    polydata->GetPointData()->AddArray(momentums);
+  
+    //append polydata to existing data
+    apd->AddInputData(polydata);
+    apd->Update();
     
 }
 
@@ -374,13 +339,11 @@ void lariat::ParaviewExtract::processDigits(art::Event const& e, std::string con
 
     Waveforms wfs;
     wfs.reserve(10000);
-    //std::string header, line;
     
     for (auto const& it : (*digits)) {
         std::vector<geo::WireID> wireids = geom_->ChannelToWire(it.Channel());
         auto plane_id = wireids[0].planeID();
         auto wire_idx = wireids[0].Wire;
-        //"eid/I,type/S,channel/I,plane/I,wireindex/I,wiresz/I,samples/I,ped/F,sigma/F\n";
         Waveform wf("eid/I,type/S,channel/I,plane/I,wireindex/I,wiresz/I,samples/I,ped/F,sigma/F\n", 
                 it.Channel(),
                 plane_id.Plane, 
@@ -392,16 +355,6 @@ void lariat::ParaviewExtract::processDigits(art::Event const& e, std::string con
             wf.adcs.push_back(it.ADC(i));
         }
         wfs.push_back(wf);
-        
-//        di_file_ << eid << ',' << label << ',' << it.Channel()
-//                << ',' << plane_id.Plane << ',' << wire_idx << ',' << wireids.size()
-//                << ',' << it.Samples() << ',' << it.GetPedestal() << ',' << it.GetSigma()
-//                ;
-//
-//        for (size_t i = 0; i < it.Samples(); ++i) {
-//            di_file_ << ',' << it.ADC(i);
-//        }
-//        di_file_ << "\n";
     }
     std::cout << "finished reading points\n";
     
@@ -512,9 +465,21 @@ void lariat::ParaviewExtract::processDigits(art::Event const& e, std::string con
         std::cerr << "In module analyze\n";
 
         if (!write_tracks_.empty()) {
-            for (auto const& lab : write_tracks_)
-                processTracks(e, lab);
-
+            vtkSmartPointer<vtkAppendPolyData> apd = 
+                    vtkSmartPointer<vtkAppendPolyData>::New();
+            int id=0;
+            for (auto const& lab : write_tracks_){
+                processTracks(e, lab, id, apd);
+                id++;
+            }
+            
+            vtkSmartPointer<vtkXMLPolyDataWriter> writer = 
+                    vtkSmartPointer<vtkXMLPolyDataWriter>::New();
+            
+    
+            writer->SetFileName(filename_out_tr.c_str());
+            writer->SetInputData(apd->GetOutput());
+            writer->Write();
             //processTracks(e,"pmtrack");
             //processTracks(e,"cctrack");
             //processTracks(e,"costrk");
