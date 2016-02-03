@@ -1,0 +1,2 @@
+# Hashes of file build rules.
+47c4eba2a156f81f9f7bf6e1270ba6cc study_dict.cpp

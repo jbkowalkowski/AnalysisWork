@@ -1,0 +1,17 @@
+<lcgdict>
+ <class name="study::IntProduct" ClassVersion="10">
+ </class>
+ <class name="study::DoubleProduct" ClassVersion="10">
+ </class>
+ <class name="study::StringProduct" ClassVersion="10">
+ </class>
+ <class name="std::vector<study::IntProduct>"/>
+ <class name="std::vector<study::DoubleProduct>"/>
+ <class name="std::vector<study::StringProduct>"/>
+ <class name="art::Wrapper<study::IntProduct>"/>
+ <class name="art::Wrapper<study::DoubleProduct>"/>
+ <class name="art::Wrapper<study::StringProduct>"/>
+ <class name="art::Wrapper<std::vector<study::IntProduct> >"/>
+ <class name="art::Wrapper<std::vector<study::DoubleProduct> >"/>
+ <class name="art::Wrapper<std::vector<study::StringProduct> >"/>
+</lcgdict>
