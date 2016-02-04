@@ -1,0 +1,54 @@
+
+process_name: TEST
+
+source:
+{
+  module_type: EmptyEvent
+  maxEvents:  100000
+}
+
+services:
+{
+  TimeTracker:       { dbOutput: { filename: "timing_ints_01.db" } }
+}
+
+physics:
+{
+  producers: 
+  {
+     maker:
+     {
+        module_type: "IntsMaker"
+        start_value: 1
+        total: 1000
+     }
+  }
+
+  analyzers:
+  {
+    user:
+    {
+        module_type: "IntsUser"
+        label: "maker"
+    }
+  }
+
+ 
+ stuff: [ maker ]
+ trigger_paths: [ stuff ]
+ analysis: [user]
+ out: [out1]
+ end_paths: [ analysis,out ]
+
+}
+
+outputs:
+{
+ out1:
+ {
+   module_type: RootOutput
+   fileName:    "ints_01.root"
+   # compressionLevel: 1
+ }
+}
+

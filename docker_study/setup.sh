@@ -1,6 +1,6 @@
 
 setup art v1_18_03 -q e9:prof
-setup cetbuildtools v4_17_02
+setup cetbuildtools v4_18_01
 
 if [ -d build ]
 then

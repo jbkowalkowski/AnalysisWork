@@ -88,6 +88,10 @@ include(BuildPlugins)
 
 simple_plugin(ParaviewExtract "module" NO_INSTALL art_Framework_Services_Registry )
 simple_plugin(IntProducer "module" NO_INSTALL)
+simple_plugin(IntMaker "module" NO_INSTALL)
+simple_plugin(IntsMaker "module" NO_INSTALL)
+simple_plugin(IntUser "module" NO_INSTALL)
+simple_plugin(IntsUser "module" NO_INSTALL)
 
 # cet_make_exec(fhicl_test
 #  SOURCE fhicl_test.cc

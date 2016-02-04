@@ -13,7 +13,7 @@ bindir      fq_dir      bin
 # define product/version pairs
 product		version
 art	v1_18_03
-cetbuildtools	v4_17_02	-	only_for_build
+cetbuildtools	v4_18_01	-	only_for_build
 end_product_list
 
 # Matrix of qualifiers versus dependent products
