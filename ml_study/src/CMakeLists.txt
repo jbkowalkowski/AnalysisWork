@@ -95,7 +95,7 @@ include(BuildPlugins)
 include(UseCPack)
 
 simple_plugin(ExtractWaveforms "module" NO_INSTALL 
-  art_Framework_Services_Registry larcore_Geometry UBooNEGeometryHelper_service)
+  art_Framework_Services_Registry larcore_Geometry lardata_RawData UBooNEGeometryHelper_service)
 
 # cet_make_exec(fhicl_test
 #   SOURCE fhicl_test.cc

@@ -294,9 +294,12 @@ void study::ExtractWaveforms::processDigits(art::Event const& e,
 		  wireids.size(), 
 		  eid, 
 		  it.GetPedestal());
+      raw::RawDigit::ADCvector_t uncom(it.Samples());
+      raw::Uncompress(it.ADCs(), uncom, it.Compression());
+
       for (size_t i = 0; i < it.Samples(); ++i) 
 	{
-	  wf.adcs.push_back(it.ADC(i));
+	  wf.adcs.push_back(uncom[i]);
         }
       wfs.push_back(wf);
     }
@@ -316,13 +319,13 @@ void study::ExtractWaveforms::processDigits(art::Event const& e,
        }
        );
   std::cout << "finished sorting points\n";
-  // size_t dim_UV = 2400, dim_Y = 3456;
-  // size_t dim_S = wfs[0].adcs.size(); // /4;
+  size_t dim_UV = 2400, dim_Y = 3456;
+  size_t dim_S = wfs[0].adcs.size(); // /4;
     
   // first u, then v, then y
-  //gen_points(writer, filename_out_u, &wfsp[0], dim_S, dim_UV);
-  //gen_points(writer, filename_out_v, &wfsp[dim_UV], dim_S, dim_UV);
-  //gen_points(writer, filename_out_y, &wfsp[dim_UV * 2], dim_S, dim_Y);
+  gen_points( filename_out_u, &wfsp[0], dim_S, dim_UV);
+  gen_points( filename_out_v, &wfsp[dim_UV], dim_S, dim_UV);
+  gen_points( filename_out_y, &wfsp[dim_UV * 2], dim_S, dim_Y);
 
 #if 0
     std::vector<geo::WireID> wireids = geo->ChannelToWire(channel);
