@@ -44,6 +44,7 @@ cet_report_compiler_flags()
 
 # these are minimum required versions, not the actual product versions
 find_ups_product( uboonecode v0_00_00 )
+find_ups_product( nutools v0_00_00 )
 find_ups_product( art v0_00_00 )
 find_ups_product( cetbuildtools v0_00_00 )
 find_ups_product( fhiclcpp v0_00_00 )
@@ -95,7 +96,7 @@ include(BuildPlugins)
 include(UseCPack)
 
 simple_plugin(ExtractWaveforms "module" NO_INSTALL 
-  art_Framework_Services_Registry larcore_Geometry lardata_RawData UBooNEGeometryHelper_service)
+  art_Framework_Services_Registry SimulationBase larcore_Geometry lardata_RawData UBooNEGeometryHelper_service)
 
 # cet_make_exec(fhicl_test
 #   SOURCE fhicl_test.cc

@@ -13,15 +13,16 @@ bindir      fq_dir      bin
 # define product/version pairs
 product		version
 uboonecode	v05_11_01
+nutools	v1_24_03
 art	v1_17_07
 cetbuildtools	v5_04_00	-	only_for_build
 end_product_list
 
 # Matrix of qualifiers versus dependent products
-qualifier	uboonecode	art	compiler	notes
-e9:debug	e9:debug	e9:nu:prof	gcc
-e9:opt	e9:opt	e9:nu:prof	gcc
-e9:prof	e9:prof	e9:nu:prof	gcc
+qualifier	uboonecode	nutools	art	compiler	notes
+e9:debug	e9:debug	e9:prof	e9:nu:prof	gcc
+e9:opt	e9:opt	e9:prof	e9:nu:prof	gcc
+e9:prof	e9:prof	e9:prof	e9:nu:prof	gcc
 # end_qualifier_list
 
 table_fragment_begin

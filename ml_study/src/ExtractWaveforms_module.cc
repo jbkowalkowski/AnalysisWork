@@ -50,6 +50,11 @@
 // #include "MCCheater/BackTracker.h"
 #include "larsim/Simulation/SimChannel.h"
 
+#include "SimulationBase/MCTruth.h"
+#include "SimulationBase/MCParticle.h"
+#include "SimulationBase/MCTrajectory.h"
+
+
 // ROOT includes
 #include "TComplex.h"
 #include "TFile.h"
@@ -121,6 +126,10 @@ private:
 		     int const& id);
   
   void processSP(art::Event const& e, std::string const& label);
+  void processMC(art::Event const& e, std::string const& label);
+  void processMCPart(art::Event const& e, std::string const& label);
+  void processParticle(simb::MCParticle const& mcp);
+
   void processDigits(art::Event const& e, std::string const& label);
   short calc_median(Waveform** wfsp, 
 		    size_t dim_S, size_t dim, 
@@ -253,6 +262,55 @@ void study::ExtractWaveforms::processTracks(art::Event const& e,
     }       
 }
 
+void study::ExtractWaveforms::processMC(art::Event const& e, std::string const& label)
+{
+  auto mct = e.getValidHandle< std::vector<simb::MCTruth> >(label);
+  auto eid = e.event();
+
+  cout << "In processMC, " << eid << " " << mct->size() << std::endl;
+
+  for(auto it=mct->begin();it!=mct->end();++it)
+    {
+      cout << "number of particles = " << it->NParticles() << std::endl;
+      for(auto i = 0;i<it->NParticles();++i)
+	{
+	  simb::MCParticle const& mcp = it->GetParticle(i);
+	  processParticle(mcp);
+	}
+    }
+}
+
+void study::ExtractWaveforms::processMCPart(art::Event const& e, std::string const& label)
+{
+  auto mct = e.getValidHandle< std::vector<simb::MCParticle> >(label);
+  auto eid = e.event();
+
+  cout << "In processMCPart, " << eid << " " << mct->size() << std::endl;
+
+  for(auto it=mct->begin();it!=mct->end();++it)
+    {
+      processParticle(*it);
+    }
+}
+
+void study::ExtractWaveforms::processParticle(simb::MCParticle const& mcp)
+{
+  simb::MCTrajectory const& mctraj = mcp.Trajectory();
+  int pdg = mcp.PdgCode();
+  auto trackid = mcp.TrackId();
+  cout << "PART " << pdg <<  " " << trackid << " " 
+       << mcp.NumberTrajectoryPoints() << " " 
+       << mctraj.TotalLength() << " " << mctraj.size() << std::endl;
+  
+  for(auto j=0UL;j<mctraj.size();++j)
+    {
+      cout << "TRAJ " << " " << pdg << " " << trackid << " " << j << " "
+	   << mctraj.X(j) << " " << mctraj.Y(j) << " " << mctraj.Z(j) << " " << mctraj.T(j) << " "
+	   << mctraj.Px(j) << " " << mctraj.Py(j) << " " << mctraj.Pz(j) << " " << mctraj.E(j) << " "
+	   << "\n";
+    }
+}
+
 void study::ExtractWaveforms::processSP(art::Event const& e, 
 					std::string const& label) 
 {
@@ -357,15 +415,17 @@ void study::ExtractWaveforms::processDigits(art::Event const& e,
 }
 
 void study::ExtractWaveforms::gen_points(
-					 std::string const& /*filename*/,
+					 std::string const& filename,
 					 Waveform** wfsp, 
 					 size_t dim_S, size_t dim) 
 {
+#if 0
   auto flat_index = [&](int i, int j, int k) 
     {
       auto a = k * (dim * dim_S) + j * dim_S + i;
       return a;
     };
+#endif
 
   std::cout << "Gen_points called\n";
   // Positions and cells
@@ -381,9 +441,9 @@ void study::ExtractWaveforms::gen_points(
       for (size_t sample = 0; sample < dim_S; ++sample) 
 	{
 	  short au = wf_u.adcs[sample] - median;
-	  auto u = flat_index(sample, wire, 0);
+	  // auto u = flat_index(sample, wire, 0);
 	  // energy->SetTupleValue(u, &au);
-          std::cout << au << " " << u << std::endl;
+          std::cout << filename << " " << wire << " " << sample << " " << au << std::endl;
         }
     }
 
@@ -427,11 +487,13 @@ void study::ExtractWaveforms::analyze(art::Event const & e)
       // processSP(e,"cctrack"); // no such thing
       // processSP(e,"costrk");
     }
-
+  
   if (!write_digits_.empty()) 
     {
       for (auto const& lab : write_digits_)
 	processDigits(e, lab);
+      processMC(e,"generator");
+      processMCPart(e,"largeant");
       // processDigits(e,"daq");
       // processDigits(e,"SlicerInput");
     }
