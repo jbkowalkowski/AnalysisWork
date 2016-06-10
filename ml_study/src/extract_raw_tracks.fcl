@@ -1,0 +1,66 @@
+# #include "DigitReader_config.fcl"
+#  Xinclude "services_lariat.fcl"
+#  #include "geometry.fcl"
+# #include "geometry_microboone.fcl"
+#include "services_microboone_basic.fcl"
+
+process_name: VIZ
+
+#source is now a root file
+source:
+{
+  module_type: RootInput
+  maxEvents:  -1        # Number of events to create
+}
+
+physics:
+{
+
+ analyzers:
+ {
+   # DigitReader:    @local::standard_digitreader
+
+	extractor:
+	{
+		module_type: "ParaviewExtract"
+		file_name: "testrun_"
+		write_tracks: [ stitchkalmanhit,
+			      cctrack,
+			      pandoraCosmicKHit,
+			      trackkalmanhit,
+			      pandoraNuKHit,
+			      stitchkalmanhitcc,
+			      trackkalmanhitc3d,
+			      trackkalmanhitcc,
+			      stitchkalmanhitc3d ]
+		write_digits: [ daq ]
+		#write_hits: [ pandoraCosmicKHitRemoval,
+		#	    cccluster,
+		#	    gaushit ]
+		#write_spacepoints: [ pandoraCosmicKHit,
+		#		   cluster3d,
+		#		   pandoraCosmic,
+		#		   trackkalmanhit,
+		#		   trackkalmanhitcc,
+		#		   trackkalmanhitc3d,
+		#		   pandoraNuKHit,
+		#		   pandoraNu ]
+	}
+}
+
+ analysis:  [extractor]
+ end_paths: [ analysis ]
+
+}
+
+outputs: {}
+
+# services:
+# {
+  # TFileService: { fileName: "DigitReader.root" }
+  # message:      @local::standard_info
+# }
+
+services.ExptGeoHelperInterface: @local::microboone_geometry_helper
+services.Geometry: @local::microboone_geo
+
