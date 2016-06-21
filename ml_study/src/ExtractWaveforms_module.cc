@@ -174,10 +174,10 @@ study::ExtractWaveforms::ExtractWaveforms(fhicl::ParameterSet const & pset) :
   write_digits_(pset.get<Strings>("write_digits", Strings())),
   write_hits_(pset.get<Strings>("write_hits", Strings())),
   write_spacepoints_(pset.get<Strings>("write_spacepoints", Strings())),
-  filename_out_u(prefix_ + "U.vti"),
-  filename_out_v(prefix_ + "V.vti"),
-  filename_out_y(prefix_ + "Y.vti"),
-  filename_out_tr(prefix_ + "tracks.vtp"),
+  filename_out_u(prefix_ + "U.csv"),
+  filename_out_v(prefix_ + "V.csv"),
+  filename_out_y(prefix_ + "Y.csv"),
+  filename_out_tr(prefix_ + "tracks.csv"),
   geom_()
 {
   std::cerr << "In module ctor\n";
@@ -381,9 +381,21 @@ void study::ExtractWaveforms::processDigits(art::Event const& e,
   size_t dim_S = wfs[0].adcs.size(); // /4;
     
   // first u, then v, then y
-  gen_points( filename_out_u, &wfsp[0], dim_S, dim_UV);
-  gen_points( filename_out_v, &wfsp[dim_UV], dim_S, dim_UV);
-  gen_points( filename_out_y, &wfsp[dim_UV * 2], dim_S, dim_Y);
+  {
+  ostringstream ofn;
+  ofn << eid << "_" << filename_out_u;
+  gen_points( ofn.str(), &wfsp[0], dim_S, dim_UV);
+  }
+  {
+  ostringstream ofn;
+  ofn << eid << "_" << filename_out_v;
+  gen_points( ofn.str(), &wfsp[dim_UV], dim_S, dim_UV);
+  }
+  {
+  ostringstream ofn;
+  ofn << eid << "_" << filename_out_y;
+  gen_points( ofn.str(), &wfsp[dim_UV * 2], dim_S, dim_Y);
+  }
 
 #if 0
     std::vector<geo::WireID> wireids = geo->ChannelToWire(channel);
@@ -431,20 +443,25 @@ void study::ExtractWaveforms::gen_points(
   // Positions and cells
   // std::cout << "NumberOfValues: " << dim*dim_S << "\n";
 
-  short low, high;
-  short median = calc_median(wfsp, dim_S, dim, .01, low, high);
+  // short low, high;
+  // short median = calc_median(wfsp, dim_S, dim, .01, low, high);
+
+  ofstream outf(filename.c_str());
 
   for (size_t wire = 0; wire < dim; ++wire) 
     {
       Waveform& wf_u = *(wfsp[wire]);
+      // outf << wire << " " ;
       
       for (size_t sample = 0; sample < dim_S; ++sample) 
 	{
-	  short au = wf_u.adcs[sample] - median;
+	  short au = wf_u.adcs[sample]; //  - median;
 	  // auto u = flat_index(sample, wire, 0);
 	  // energy->SetTupleValue(u, &au);
-          std::cout << filename << " " << wire << " " << sample << " " << au << std::endl;
+          outf << au << " ";
         }
+
+      outf << "\n";
     }
 
   // auto cells = pts->GetPointData();
@@ -492,8 +509,8 @@ void study::ExtractWaveforms::analyze(art::Event const & e)
     {
       for (auto const& lab : write_digits_)
 	processDigits(e, lab);
-      processMC(e,"generator");
-      processMCPart(e,"largeant");
+      // processMC(e,"generator");
+      // processMCPart(e,"largeant");
       // processDigits(e,"daq");
       // processDigits(e,"SlicerInput");
     }
