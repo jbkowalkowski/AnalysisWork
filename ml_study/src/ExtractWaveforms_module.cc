@@ -134,9 +134,12 @@ private:
   short calc_median(Waveform** wfsp, 
 		    size_t dim_S, size_t dim, 
 		    double band, short& out_low, short& out_high);
+  short calc_median(Waveform** wfsp, 
+		    size_t dim_S, size_t wire); 
   void gen_points(std::string const& filename,
 		  Waveform** wfsp, size_t dim_S, size_t dim);
     
+  bool as_mask_;
   std::string prefix_;
   Strings write_tracks_;
   Strings write_digits_;
@@ -169,6 +172,7 @@ void checkFile(ofstream& s, std::string const& n)
 
 study::ExtractWaveforms::ExtractWaveforms(fhicl::ParameterSet const & pset) :
   EDAnalyzer(pset),
+  as_mask_(pset.get< bool >("as_mask",false)),
   prefix_(pset.get< std::string >("file_name", "output_")),
   write_tracks_(pset.get<Strings>("write_tracks", Strings())),
   write_digits_(pset.get<Strings>("write_digits", Strings())),
@@ -186,6 +190,23 @@ study::ExtractWaveforms::ExtractWaveforms(fhicl::ParameterSet const & pset) :
 }
 
 study::ExtractWaveforms::~ExtractWaveforms() { }
+
+short study::ExtractWaveforms::calc_median(Waveform** wfsp, size_t dim_S, size_t wire)
+{
+  // const double get_rid = .49;
+  std::vector<short> all_plane;
+  all_plane.reserve(3500 * 10000);
+  cout << "generating median" << std::endl;
+  
+  Waveform& wfa = *(wfsp[wire]);
+  for (size_t sample = 0; sample < dim_S; ++sample)
+    all_plane.push_back(wfa.adcs[sample]);
+  
+  sort(all_plane.begin(), all_plane.end());
+  auto all_half_u = all_plane.size() / 2;
+  auto all_median_u = all_plane[all_half_u];
+  return all_median_u;
+}
 
 short study::ExtractWaveforms::calc_median(Waveform** wfsp, size_t dim_S, size_t dim, double band, short& out_low, short& out_high) 
 {
@@ -304,9 +325,9 @@ void study::ExtractWaveforms::processParticle(simb::MCParticle const& mcp)
   
   for(auto j=0UL;j<mctraj.size();++j)
     {
-      cout << "TRAJ " << " " << pdg << " " << trackid << " " << j << " "
-	   << mctraj.X(j) << " " << mctraj.Y(j) << " " << mctraj.Z(j) << " " << mctraj.T(j) << " "
-	   << mctraj.Px(j) << " " << mctraj.Py(j) << " " << mctraj.Pz(j) << " " << mctraj.E(j) << " "
+      cout << "TRAJ " <<" "<< pdg <<" "<< trackid <<" "<< j <<" "
+	   << mctraj.X(j) <<" "<< mctraj.Y(j) <<" "<< mctraj.Z(j) <<" "<< mctraj.T(j) <<" "
+	   << mctraj.Px(j) <<" "<< mctraj.Py(j) <<" "<< mctraj.Pz(j) <<" "<< mctraj.E(j) <<" "
 	   << "\n";
     }
 }
@@ -443,19 +464,17 @@ void study::ExtractWaveforms::gen_points(
   // Positions and cells
   // std::cout << "NumberOfValues: " << dim*dim_S << "\n";
 
-  // short low, high;
-  // short median = calc_median(wfsp, dim_S, dim, .01, low, high);
-
   ofstream outf(filename.c_str());
 
   for (size_t wire = 0; wire < dim; ++wire) 
     {
+      short median = as_mask_?calc_median(wfsp, dim_S, wire):0;
       Waveform& wf_u = *(wfsp[wire]);
       // outf << wire << " " ;
       
       for (size_t sample = 0; sample < dim_S; ++sample) 
 	{
-	  short au = wf_u.adcs[sample]; //  - median;
+	  short au = wf_u.adcs[sample] - median;
 	  // auto u = flat_index(sample, wire, 0);
 	  // energy->SetTupleValue(u, &au);
           outf << au << " ";
