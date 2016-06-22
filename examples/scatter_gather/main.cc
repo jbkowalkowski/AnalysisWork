@@ -16,6 +16,7 @@
 #include <sys/stat.h>
 
 #include "mpi.h"
+#include <string.h>
 
 using namespace std;
 
@@ -35,8 +36,11 @@ public:
 
   int rank_group() const { return rank_group_; }
   int np_group() const { return np_group_; }
+  MPI_Comm comm_group() const { return comm_; }
+  MPI_Comm comm() const { return MPI_COMM_WORLD; }
 
   void barrier();
+  void barrier_group();
 
 private:
   int np_;
@@ -55,6 +59,25 @@ Mpi::Mpi(int argc, char* argv[])
   MPI_Comm_size(MPI_COMM_WORLD,&np_);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank_);
   hostid_ = (unsigned int)(gethostid());
+
+  unsigned int group_size = 5;
+
+  auto iogroup = std::find_if(&argv[0],&argv[argc],
+			      [](const char* p) {return strcmp(p,"--iogroup")==0;});
+  if(iogroup==&argv[argc] || (iogroup+1)==&argv[argc])
+    {
+      if(rank_==0)
+	{
+	  cerr << "no iogroup option given\n";
+	}
+    }
+  else
+    {
+      group_size=(unsigned int)atoi(*(iogroup+1));
+    }
+
+  hostid_=(rank_) / group_size;
+  cerr << "hostid_ = " << hostid_ << "\n";
 
   int name_sz = 0;
   char name_buf[MPI_MAX_PROCESSOR_NAME];
@@ -75,6 +98,11 @@ Mpi::~Mpi()
 void Mpi::barrier()
 {
   MPI_Barrier(MPI_COMM_WORLD);
+}
+
+void Mpi::barrier_group()
+{
+  MPI_Barrier(comm_);
 }
 
 
@@ -137,7 +165,7 @@ int main(int argc, char* argv[])
       common.resize(10000);
     }
   
-  MPI_Bcast(&common[0],common.size(),MPI_BYTE,0,MPI_COMM_WORLD);
+  MPI_Bcast(&common[0],common.size(),MPI_BYTE,0,mpi.comm());
   out << "common config = " << common << " " << common.size() << "\n";
   out.flush();
 
@@ -148,22 +176,22 @@ int main(int argc, char* argv[])
       pdf.resize(10000);
     }
   
-  MPI_Bcast(&pdf[0],pdf.size(),MPI_BYTE,0,MPI_COMM_WORLD);
+  MPI_Bcast(&pdf[0],pdf.size(),MPI_BYTE,0,mpi.comm());
   out << "pdf = " << pdf << "\n";
   out.flush();
   
   // prepare the specific configurations
   vector<int> vs;
-  if (mpi.rank()==0) 
+  if (mpi.rank_group()==0) 
     {
-      vs.resize(mpi.np());
-      for(size_t i=0;i<mpi.np();++i)
+      vs.resize(mpi.np_group());
+      for(size_t i=0;i<mpi.np_group();++i)
 	{
 	  vs[i]=i*10000;
 	}
     }
   
-  MPI_Scatter(&vs[0],1,MPI_INT,&specific,1,MPI_INT, 0,MPI_COMM_WORLD);  
+  MPI_Scatter(&vs[0],1,MPI_INT,&specific,1,MPI_INT, 0,mpi.comm());  
   out << "specific = " << specific << "\n";
   out.flush();
 
@@ -205,12 +233,12 @@ int main(int argc, char* argv[])
   string cvals = ovals.str();
   total = cvals.size();
 
-  if(mpi.rank()==0)
+  if(mpi.rank_group()==0)
     {
       // first get lengths of each string from each rank
-      std::vector<int> sizes(mpi.np());
+      std::vector<int> sizes(mpi.np_group());
       MPI_Gather(&total,1, MPI_INT, &sizes[0],1, MPI_INT, 
-		 0, MPI_COMM_WORLD);
+		 0, mpi.comm_group());
 
       // set the total size of the return string across all ranks
       string recv;
@@ -227,7 +255,7 @@ int main(int argc, char* argv[])
 	}
 
       MPI_Gatherv(&cvals[0],total, MPI_BYTE, &recv[0],&sizes[0],&offsets[0],
-		  MPI_BYTE,0,MPI_COMM_WORLD);
+		  MPI_BYTE,0, mpi.comm_group());
 
       cerr << "completed gatherv at root\n";
       cerr << recv << "\n";
@@ -245,10 +273,10 @@ int main(int argc, char* argv[])
       cerr << "start gather (output\n";
       int* dummy = 0;
       MPI_Gather(&total, 1, MPI_INT, dummy,1,MPI_INT,
-		 0,MPI_COMM_WORLD);
+		 0,mpi.comm_group());
       cerr << "completing gather (output)\n";
       MPI_Gatherv(&cvals[0], total, MPI_BYTE, dummy,dummy,dummy,
-		  MPI_BYTE,0,MPI_COMM_WORLD);
+		  MPI_BYTE,0,mpi.comm_group());
       cerr << "completing gatherv\n";
     }
 
