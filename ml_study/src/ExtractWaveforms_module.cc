@@ -464,7 +464,9 @@ void study::ExtractWaveforms::gen_points(
   // Positions and cells
   // std::cout << "NumberOfValues: " << dim*dim_S << "\n";
 
+  std::string sigs = "sigs";
   ofstream outf(filename.c_str());
+  ofstream outfs((sigs+filename).c_str());
 
   for (size_t wire = 0; wire < dim; ++wire) 
     {
@@ -472,12 +474,55 @@ void study::ExtractWaveforms::gen_points(
       Waveform& wf_u = *(wfsp[wire]);
       // outf << wire << " " ;
       
+      short prev_au = wf_u.adcs[0] - median;
+      char state = 'z';
+      size_t sum=0;
+      size_t curr_pos=0;
+      size_t start=0;
+
       for (size_t sample = 0; sample < dim_S; ++sample) 
 	{
 	  short au = wf_u.adcs[sample] - median;
-	  // auto u = flat_index(sample, wire, 0);
-	  // energy->SetTupleValue(u, &au);
           outf << au << " ";
+	  short diff = au - prev_au;
+	  prev_au = au;
+	  sum+=diff;
+	  
+	  switch(state)
+	    {
+	    case 'z': 
+	      if(sum!=0) 
+		{
+		  state='s';
+		  //outf << wire << " " << state << " " << sample << "\n";
+		  start=sample;
+		}
+	      break;
+	    case 's':
+	      if(sum==0) { state='a'; curr_pos=sample; }
+	      break;
+	    case 'a':
+	      if(sum==0) state='b'; else state='s';
+	      break;
+	    case 'b':
+	      if(sum==0) state='c'; else state='s';
+	      break;
+	    case 'c':
+	      if(sum==0)
+		{
+		  state='z';
+		  outfs << wire << " " << start << " " << curr_pos << " " 
+		        << (curr_pos-start) ;
+                  long pstart=(curr_pos-start)/2+start - 100;
+                  pstart = pstart>=0?pstart:0;
+                  unsigned long pend=pstart+200;
+                  if(pend>dim_S) { pend=dim_S; pstart=dim_S-200; }
+                  for(size_t ii=pstart;ii<pend;++ii) outfs << " " << (wf_u.adcs[sample]-median);
+                  outfs << "\n";
+		}
+	      else state='s';
+	      break;
+	    }
         }
 
       outf << "\n";

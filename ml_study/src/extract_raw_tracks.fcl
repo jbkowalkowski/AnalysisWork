@@ -23,7 +23,8 @@ physics:
 	extractor:
 	{
 		module_type: "ExtractWaveforms"
-		file_name: "testrun_"
+		# as_mask:true
+		file_name: "width_"
 		# write_tracks: [ stitchkalmanhit,
 		# 	      cctrack,
 		# 	      pandoraCosmicKHit,
