@@ -1,0 +1,40 @@
+# #include "DigitReader_config.fcl"
+#  Xinclude "services_lariat.fcl"
+#  #include "geometry.fcl"
+# #include "geometry_microboone.fcl"
+#include "services_microboone_basic.fcl"
+
+process_name: VIZ
+
+#source is now a root file
+source:
+{
+  module_type: RootInput
+  maxEvents:  -1        # Number of events to create
+}
+
+physics:
+{
+ analyzers:
+ {
+	extractor:
+	{
+		module_type: "ExtractWaveforms"
+		as_mask:false # subtracts the median value of each wire
+		file_name: "xxxxx_" # prefix for all files
+                zeros:10
+                find_sigs:true
+		write_digits: [ daq ]
+	}
+}
+
+ analysis:  [extractor]
+ end_paths: [ analysis ]
+
+}
+
+outputs: {}
+
+services.ExptGeoHelperInterface: @local::microboone_geometry_helper
+services.Geometry: @local::microboone_geo
+

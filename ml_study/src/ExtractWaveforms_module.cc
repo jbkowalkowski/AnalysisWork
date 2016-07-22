@@ -2,6 +2,11 @@
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 
+#include <tbb/parallel_for.h>
+#include <tbb/blocked_range.h>
+#include "tbb/parallel_reduce.h"
+#include "tbb/parallel_sort.h"
+
 // Framework includes
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h" 
@@ -68,48 +73,72 @@
 #include <sstream>
 #include <iostream>
 #include <stdexcept>
+#include <iterator>
+#include <algorithm>
 
 using namespace std;
 
+struct Waveform;
+
 namespace study {
-    class ExtractWaveforms;
+  class ExtractWaveforms;
+  short calc_median(Waveform& wfs, size_t dim_S);
+  short calc_median(Waveform** wfsp, size_t dim_S, size_t wire);
 }
 
+
 struct Waveform {
-
-    Waveform() :
-    type("NONE"), channel(0), plane(0), wireindex(0), wiresz(0), eid(0), ped(0.0) {
-        adcs.reserve(10000);
-    }
-
-    Waveform(string const& t, int c, int pl, int wi, int sz, int e, float p) :
-    type(t), channel(c), plane(pl), wireindex(wi), wiresz(sz), eid(e), ped(p) {
-        adcs.reserve(10000);
-    }
-
-    Waveform(istream& ist) :
-    type("NONE"), channel(0), plane(0), wireindex(0), wiresz(0), eid(0), ped(0.0) {
-        float sigma;
-        int samples;
-        adcs.reserve(10000);
-        ist >> eid >> type >> channel >> plane >> wireindex >> wiresz >> samples >> ped >> sigma;
-
-        short val;
-        while (!(ist >> val).eof()) adcs.push_back(val);
-
-    }
-
-    string type;
-    int channel;
-    int plane;
-    int wireindex;
-    int wiresz;
-    int eid;
-    float ped;
-    vector<short> adcs;
+  
+  Waveform() :
+    type("NONE"), channel(0), plane(0), wireindex(0), wiresz(0), eid(0), ped(0.0),
+    adcs(),median(0)
+  {
+    adcs.reserve(10000);
+  }
+  
+  Waveform(string const& t, int c, int pl, int wi, int sz, int e, float p) :
+    type(t), channel(c), plane(pl), wireindex(wi), wiresz(sz), eid(e), ped(p),
+    adcs(),median(0)
+  {
+    adcs.reserve(10000);
+  }
+  
+  Waveform(istream& ist) :
+    type("NONE"), channel(0), plane(0), wireindex(0), wiresz(0), eid(0), ped(0.0),
+    adcs(),median(0)
+  {
+    float sigma;
+    int samples;
+    adcs.reserve(10000);
+    ist >> eid >> type >> channel >> plane
+	>> wireindex >> wiresz >> samples >> ped >> sigma;
+    
+    short val;
+    while (!(ist >> val).eof()) adcs.push_back(val);
+    study::calc_median(*this,adcs.size());
+  }
+  
+  void fill(raw::RawDigit::ADCvector_t& uncom, size_t total)
+  {
+    for (size_t i = 0; i < total; ++i) 
+      {
+	adcs.push_back(uncom[i]);
+      }
+    median=study::calc_median(*this, total);
+  }
+  
+  string type;
+  int channel;
+  int plane;
+  int wireindex;
+  int wiresz;
+  int eid;
+  float ped;
+  vector<short> adcs;
+  short median;
 };
-typedef vector<Waveform> Waveforms;
 
+typedef vector<Waveform> Waveforms;
 typedef std::vector<std::string> Strings;
 
 class study::ExtractWaveforms : public art::EDAnalyzer
@@ -134,21 +163,22 @@ private:
   short calc_median(Waveform** wfsp, 
 		    size_t dim_S, size_t dim, 
 		    double band, short& out_low, short& out_high);
-  short calc_median(Waveform** wfsp, 
-		    size_t dim_S, size_t wire); 
+  //short calc_median(Waveform** wfsp, 
+  //		    size_t dim_S, size_t wire); 
+  //short calc_median(Waveform& wfsp, 
+  //		    size_t dim_S); 
   void gen_points(std::string const& filename,
 		  Waveform** wfsp, size_t dim_S, size_t dim);
     
   bool as_mask_;
   std::string prefix_;
-  Strings write_tracks_;
   Strings write_digits_;
-  Strings write_hits_;
-  Strings write_spacepoints_;
+  bool find_sigs_;
+  size_t zeros_;
+  bool use_delta_;
   std::string filename_out_u;
   std::string filename_out_v;
   std::string filename_out_y;
-  std::string filename_out_tr;
   geo::Geometry* geom_;
 };
 
@@ -174,14 +204,13 @@ study::ExtractWaveforms::ExtractWaveforms(fhicl::ParameterSet const & pset) :
   EDAnalyzer(pset),
   as_mask_(pset.get< bool >("as_mask",false)),
   prefix_(pset.get< std::string >("file_name", "output_")),
-  write_tracks_(pset.get<Strings>("write_tracks", Strings())),
   write_digits_(pset.get<Strings>("write_digits", Strings())),
-  write_hits_(pset.get<Strings>("write_hits", Strings())),
-  write_spacepoints_(pset.get<Strings>("write_spacepoints", Strings())),
+  find_sigs_(pset.get< bool >("find_sigs",false)),
+  zeros_(pset.get<size_t>("zeros",3)),
+  use_delta_(pset.get< bool >("use_delta",false)),
   filename_out_u(prefix_ + "U.csv"),
   filename_out_v(prefix_ + "V.csv"),
   filename_out_y(prefix_ + "Y.csv"),
-  filename_out_tr(prefix_ + "tracks.csv"),
   geom_()
 {
   std::cerr << "In module ctor\n";
@@ -191,14 +220,21 @@ study::ExtractWaveforms::ExtractWaveforms(fhicl::ParameterSet const & pset) :
 
 study::ExtractWaveforms::~ExtractWaveforms() { }
 
-short study::ExtractWaveforms::calc_median(Waveform** wfsp, size_t dim_S, size_t wire)
+//short study::ExtractWaveforms::calc_median(Waveform** wfsp, size_t dim_S, size_t wire)
+short study::calc_median(Waveform** wfsp, size_t dim_S, size_t wire)
+{
+  Waveform& wfa = *(wfsp[wire]);
+  return calc_median(wfa,dim_S);
+}
+
+//short study::ExtractWaveforms::calc_median(Waveform& wfs, size_t dim_S)
+short study::calc_median(Waveform& wfa, size_t dim_S)
 {
   // const double get_rid = .49;
   std::vector<short> all_plane;
   all_plane.reserve(3500 * 10000);
-  cout << "generating median" << std::endl;
+  //cout << "generating median" << std::endl;
   
-  Waveform& wfa = *(wfsp[wire]);
   for (size_t sample = 0; sample < dim_S; ++sample)
     all_plane.push_back(wfa.adcs[sample]);
   
@@ -232,126 +268,6 @@ short study::ExtractWaveforms::calc_median(Waveform** wfsp, size_t dim_S, size_t
   return all_median_u;
 }
 
-void study::ExtractWaveforms::processTracks(art::Event const& e, 
-					    std::string const& label, 
-					    int const& /*id*/)
-{
-  auto tr = e.getValidHandle< std::vector<recob::Track> >(label); //* to array of tracks
-  art::FindMany<recob::Hit> hits_p(tr, e, label); // "pmtrack");
-  //auto eid = e.event();
-
-  std::cout << "Processing tracks for algorithm " << label << "\n";
-  
-  //Attributes
-  //do we need the evend id too?
-  //all the points in this file will be from the same event anyways
-  //set the expected size for these attribute arrays?
-  //don't know what to call to find that.
-  
-  for (size_t i = 0; i < tr->size(); ++i)
-    { //for each track
-      // auto tid = (*tr)[i].ID(); //track ID
-      
-      if (!write_hits_.empty())
-	{
-	  std::vector<recob::Hit const*> hits;
-	  hits_p.get(i, hits);
-	  for (size_t j = 0; j < hits.size(); ++j)
-	    { 
-	      // for each hit algorithm
-	      // hit data output
-	    }
-	}
-      
-      size_t numTrajPoints = (*tr)[i].NumberTrajectoryPoints();
-      std::cerr << "at track processing position " << i << "\n";
-      
-      for (size_t j = 0; j < numTrajPoints; ++j) 
-	{ 
-	  // for each point on track
-	  // std::cerr << "at traj processing position " << j << "\n";
-	  double pos[3];
-	  double dir[3];
-	  (*tr)[i].LocationAtPoint(j).GetXYZ(pos);
-	  (*tr)[i].DirectionAtPoint(j).GetXYZ(dir);
-	  // double p = (*tr)[i].MomentumAtPoint(j);
-          
-	  //add the point to "points" and the id to the PolyLine
-	  // variable list
-	  // label, id, tid, j, dir, p            
-	}
-    }       
-}
-
-void study::ExtractWaveforms::processMC(art::Event const& e, std::string const& label)
-{
-  auto mct = e.getValidHandle< std::vector<simb::MCTruth> >(label);
-  auto eid = e.event();
-
-  cout << "In processMC, " << eid << " " << mct->size() << std::endl;
-
-  for(auto it=mct->begin();it!=mct->end();++it)
-    {
-      cout << "number of particles = " << it->NParticles() << std::endl;
-      for(auto i = 0;i<it->NParticles();++i)
-	{
-	  simb::MCParticle const& mcp = it->GetParticle(i);
-	  processParticle(mcp);
-	}
-    }
-}
-
-void study::ExtractWaveforms::processMCPart(art::Event const& e, std::string const& label)
-{
-  auto mct = e.getValidHandle< std::vector<simb::MCParticle> >(label);
-  auto eid = e.event();
-
-  cout << "In processMCPart, " << eid << " " << mct->size() << std::endl;
-
-  for(auto it=mct->begin();it!=mct->end();++it)
-    {
-      processParticle(*it);
-    }
-}
-
-void study::ExtractWaveforms::processParticle(simb::MCParticle const& mcp)
-{
-  simb::MCTrajectory const& mctraj = mcp.Trajectory();
-  int pdg = mcp.PdgCode();
-  auto trackid = mcp.TrackId();
-  cout << "PART " << pdg <<  " " << trackid << " " 
-       << mcp.NumberTrajectoryPoints() << " " 
-       << mctraj.TotalLength() << " " << mctraj.size() << std::endl;
-  
-  for(auto j=0UL;j<mctraj.size();++j)
-    {
-      cout << "TRAJ " <<" "<< pdg <<" "<< trackid <<" "<< j <<" "
-	   << mctraj.X(j) <<" "<< mctraj.Y(j) <<" "<< mctraj.Z(j) <<" "<< mctraj.T(j) <<" "
-	   << mctraj.Px(j) <<" "<< mctraj.Py(j) <<" "<< mctraj.Pz(j) <<" "<< mctraj.E(j) <<" "
-	   << "\n";
-    }
-}
-
-void study::ExtractWaveforms::processSP(art::Event const& e, 
-					std::string const& label) 
-{
-  auto sp = e.getValidHandle< std::vector<recob::SpacePoint> >(label);
-  auto eid = e.event();
-  
-  for (auto const& it : (*sp))
-    {
-      const double* pos = it.XYZ();
-      const double* err = it.ErrXYZ();
-      
-#if 1
-      std::cout << eid << ',' << label << ',' << it.ID()
-               << ',' << pos[0] << ',' << pos[1] << ',' << pos[2]
-               << ',' << err[0] << ',' << err[1] << ',' << err[2]
-               << "\n";
-#endif
-    }
-}
-
 void study::ExtractWaveforms::processDigits(art::Event const& e, 
 					    std::string const& label)
 {
@@ -360,19 +276,41 @@ void study::ExtractWaveforms::processDigits(art::Event const& e,
 
   Waveforms wfs;
   wfs.reserve(10000);
-    
+
+#if 1
+  auto digi = *digits;
+  wfs.resize(digi.size());
+  tbb::blocked_range<size_t> range(0, digi.size());
+  tbb::parallel_for(range, [&](const tbb::blocked_range<size_t>& r) {
+      for (size_t i = r.begin(); i < r.end(); ++i)
+	{
+	  raw::RawDigit::ADCvector_t uncom(digi[i].Samples());
+	  raw::Uncompress(digi[i].ADCs(), uncom, digi[i].Compression());
+
+	  std::vector<geo::WireID> wireids = geom_->ChannelToWire(digi[i].Channel());
+	  auto plane_id = wireids[0].planeID();
+	  auto wire_idx = wireids[0].Wire;
+	  
+	  Waveform wf("eid,type,channel,plane,wireindex,wiresz,samples,ped,sigma\n", 
+		      digi[i].Channel(), plane_id.Plane, 
+		      wire_idx, wireids.size(), 
+		      eid, digi[i].GetPedestal());
+
+	  wf.fill(uncom, digi[i].Samples());
+	  wfs[i]=wf;
+	}
+    }
+    );
+#else
   for (auto const& it : (*digits)) 
     {
       std::vector<geo::WireID> wireids = geom_->ChannelToWire(it.Channel());
       auto plane_id = wireids[0].planeID();
       auto wire_idx = wireids[0].Wire;
-      Waveform wf("eid/I,type/S,channel/I,plane/I,wireindex/I,wiresz/I,samples/I,ped/F,sigma/F\n", 
-		  it.Channel(),
-		  plane_id.Plane, 
-		  wire_idx, 
-		  wireids.size(), 
-		  eid, 
-		  it.GetPedestal());
+      Waveform wf("eid,type,channel,plane,wireindex,wiresz,samples,ped,sigma\n", 
+		  it.Channel(), plane_id.Plane, 
+		  wire_idx, wireids.size(), 
+		  eid, it.GetPedestal());
       raw::RawDigit::ADCvector_t uncom(it.Samples());
       raw::Uncompress(it.ADCs(), uncom, it.Compression());
 
@@ -383,8 +321,30 @@ void study::ExtractWaveforms::processDigits(art::Event const& e,
       wfs.push_back(wf);
     }
   std::cout << "finished reading points\n";
-    
+#endif
+
   vector<Waveform*> wfsp;
+  wfsp.reserve(wfs.size());
+#if 1
+  wfsp.resize(wfs.size());
+  tbb::blocked_range<size_t> wrange(0, wfsp.size());
+  tbb::parallel_for(wrange, [&](const tbb::blocked_range<size_t>& r) {
+      for (size_t i = r.begin(); i < r.end(); ++i)
+	{
+	  wfsp[i] = &wfs[i];
+	}
+    }
+    );
+
+  tbb::parallel_sort(wfsp.begin(), wfsp.end(),
+		     [](Waveform* a, Waveform * b) {
+		       return (a->plane < b->plane) ? true :
+			 (a->plane > b->plane) ? false :
+			 (a->wireindex < b->wireindex) ? true :
+			 false;
+		     }
+		     );
+#else  
   for (size_t i = 0; i < wfs.size(); ++i) 
     {
       wfsp.push_back(&wfs[i]);
@@ -397,6 +357,7 @@ void study::ExtractWaveforms::processDigits(art::Event const& e,
 	   false;
        }
        );
+#endif
   std::cout << "finished sorting points\n";
   size_t dim_UV = 2400, dim_Y = 3456;
   size_t dim_S = wfs[0].adcs.size(); // /4;
@@ -418,165 +379,185 @@ void study::ExtractWaveforms::processDigits(art::Event const& e,
   gen_points( ofn.str(), &wfsp[dim_UV * 2], dim_S, dim_Y);
   }
 
-#if 0
-    std::vector<geo::WireID> wireids = geo->ChannelToWire(channel);
-    for (auto const& wid : wireids)
+}
+
+struct SigRange
+{
+  size_t wire;
+  size_t start;
+  size_t end;
+  size_t size;
+  int sum;
+  short median;
+};
+std::ostream& operator<<(std::ostream& ost, SigRange const& sr)
+{
+  ost << sr.wire << " " << sr.start << " "
+      << sr.end << " " << sr.size << " " << sr.sum << " " << sr.median;
+  return ost;
+}
+
+struct SigBody
+{
+  SigBody(Waveform** wfs,size_t ds,size_t d,int ns, bool ud):
+    dim_S(ds),dim(d),no_sig(ns),wfsp(wfs),use_delta(ud) { }
+  
+  SigBody(SigBody& s,tbb::split):
+    dim_S(s.dim_S),dim(s.dim),no_sig(s.no_sig),wfsp(s.wfsp),use_delta(s.use_delta) { }
+  // ~SigBody() { }
+
+  size_t dim_S,dim;
+  int no_sig;
+  Waveform** wfsp;
+  bool use_delta;
+  
+  void operator()(const tbb::blocked_range<size_t>& r)
+  {
+    for (size_t i = r.begin(); i < r.end(); ++i)
       {
-        // check that the plane and tpc are the correct ones to draw
-        if (wid.planeID() != pid) continue;
-#endif
-
-#if 0
-        auto pulses = e.getValidHandle<std::vector< raw::OpDetPulse >> (label);
-        for (auto const& it : (*pulses))
+	Waveform& wf_u = *(wfsp[i]);
+	int sum=0;
+	size_t start=0, end=0;
+	int state=no_sig;
+	auto curr = wf_u.adcs[0];
+	
+	for (size_t sample = 0; sample < dim_S; ++sample) 
 	  {
-            pu_file_ << eid << ',' << label << ',' << it.OpChannel()
-		     << ',' << it.Samples() << ',' << it.PMTFrame() 
-		     << ',' << it.FirstSample()
-	      ;
-
-            // cannot gain access to the waveform (const)
-            std::vector<short> wf = it.Waveform();
-            for (auto const& it : (*wf)) 
+	    short au = wf_u.adcs[sample];
+	    auto d = au - (use_delta?curr:wf_u.median);
+	    curr=au;
+	    
+	    if(state==0)
+	      { if(d==0) { ++state; end=sample; }}
+	    else if(state==no_sig)
+	      { if(d!=0) { state=0; start=sample; }}
+	    else if(state==(no_sig-1))
 	      {
-                pu_file_ << ',' << wf;
+		if(d==0)
+		  {
+		    // save currrent SigRange object
+		    sigs.emplace_back( SigRange({ i, start,end, (end-start), sum, wf_u.median }) );
+		    start=0;
+		    end=0;
+		    ++state;
+		  }
+		else state=0;
 	      }
-            pu_file_ << "\n";
+	    else
+	      {
+		if(d==0) ++state; else state=0;
+	      }
+	    sum+=d;
+	  }
+	
+	if(start!=0 || end!=0)
+	  {
+	    if(end<start) end=dim_S;
+	    // save current SigRange object
+	    sigs.emplace_back( SigRange({ i, start,end, (end-start), sum, wf_u.median }) );
 	  }
       }
-#endif
-}
+  }
+
+  void join(SigBody& rhs)
+  {
+    sigs.insert(sigs.end(), rhs.sigs.begin(), rhs.sigs.end());
+  }
+
+  vector<SigRange> sigs;
+  
+};
 
 void study::ExtractWaveforms::gen_points(
 					 std::string const& filename,
 					 Waveform** wfsp, 
 					 size_t dim_S, size_t dim) 
 {
-#if 0
-  auto flat_index = [&](int i, int j, int k) 
-    {
-      auto a = k * (dim * dim_S) + j * dim_S + i;
-      return a;
-    };
-#endif
-
   std::cout << "Gen_points called\n";
-  // Positions and cells
-  // std::cout << "NumberOfValues: " << dim*dim_S << "\n";
-
-  std::string sigs = "sigs";
   ofstream outf(filename.c_str());
-  ofstream outfs((sigs+filename).c_str());
 
   for (size_t wire = 0; wire < dim; ++wire) 
     {
-      short median = as_mask_?calc_median(wfsp, dim_S, wire):0;
       Waveform& wf_u = *(wfsp[wire]);
-      // outf << wire << " " ;
+      short median = as_mask_?wf_u.median:0;
       
-      short prev_au = wf_u.adcs[0] - median;
-      char state = 'z';
-      size_t sum=0;
-      size_t curr_pos=0;
-      size_t start=0;
-
       for (size_t sample = 0; sample < dim_S; ++sample) 
 	{
 	  short au = wf_u.adcs[sample] - median;
           outf << au << " ";
-	  short diff = au - prev_au;
-	  prev_au = au;
-	  sum+=diff;
-	  
-	  switch(state)
-	    {
-	    case 'z': 
-	      if(sum!=0) 
-		{
-		  state='s';
-		  //outf << wire << " " << state << " " << sample << "\n";
-		  start=sample;
-		}
-	      break;
-	    case 's':
-	      if(sum==0) { state='a'; curr_pos=sample; }
-	      break;
-	    case 'a':
-	      if(sum==0) state='b'; else state='s';
-	      break;
-	    case 'b':
-	      if(sum==0) state='c'; else state='s';
-	      break;
-	    case 'c':
-	      if(sum==0)
-		{
-		  state='z';
-		  outfs << wire << " " << start << " " << curr_pos << " " 
-		        << (curr_pos-start) ;
-                  long pstart=(curr_pos-start)/2+start - 100;
-                  pstart = pstart>=0?pstart:0;
-                  unsigned long pend=pstart+200;
-                  if(pend>dim_S) { pend=dim_S; pstart=dim_S-200; }
-                  for(size_t ii=pstart;ii<pend;++ii) outfs << " " << (wf_u.adcs[sample]-median);
-                  outfs << "\n";
-		}
-	      else state='s';
-	      break;
-	    }
-        }
-
+	}
       outf << "\n";
     }
 
-  // auto cells = pts->GetPointData();
-  //cells->AddArray(energy);  
+  if(!find_sigs_) return;
+
+  int no_sig = (int)zeros_;
+  tbb::blocked_range<size_t> range(0, dim);
+#if 1
+  SigBody b(wfsp, dim_S, dim, no_sig,use_delta_);
+  parallel_reduce(range, b);
+  ofstream outfs((string("sig_") + filename).c_str());
+  copy(b.sigs.begin(),b.sigs.end(),std::ostream_iterator<SigRange>(outfs,"\n"));
+#else
+  tbb::parallel_for(range, [&](const tbb::blocked_range<size_t>& r) {
+      vector<SigRange> sigs;
+      for (size_t i = r.begin(); i < r.end(); ++i)
+	{
+	  Waveform& wf_u = *(wfsp[i]);
+	  int sum=0;
+	  size_t start=0, end=0;
+	  int state=no_sig;
+	  auto curr = wf_u.adcs[0];
+	  
+	  for (size_t sample = 0; sample < dim_S; ++sample) 
+	    {
+	      short au = wf_u.adcs[sample];
+	      auto d = au-curr;
+	      curr=au;
+
+	      if(state==0)
+		{ if(d==0) { ++state; end=sample; }}
+	      else if(state==no_sig)
+		{ if(d!=0) { state=0; start=i; }}
+	      else if(state==(no_sig-1))
+		{
+		  if(d==0)
+		    {
+		      // save currrent SigRange object
+		      sigs.emplace_back( SigRange({ start,end, (end-start), sum }) );
+		      start=0;
+		      end=0;
+		      ++state;
+		    }
+		  else state=0;
+		}
+	      else
+		{
+		  if(d==0) ++state; else state=0;
+		}
+	      sum+=d;
+	    }
+	  
+	  if(start!=0 || end!=0)
+	    {
+	      if(end<start) end=dim_S;
+	      // save current SigRange object
+	      sigs.emplace_back( SigRange({ start,end, (end-start), sum }) );
+	    }
+	}
+    }
+    );
+#endif
 }
 
 void study::ExtractWaveforms::analyze(art::Event const & e) 
 {
-#if 0
-  rdu::TriggerDigitUtility tdu(evt, fTriggerUtility);
-  art::ServiceHandle<util::LArProperties> larprop;
-  art::ServiceHandle<util::DetectorProperties> detprop;
-  art::ServiceHandle<cheat::BackTracker> bt;
-#endif
-  
   std::cerr << "In module analyze\n";
 
-  if (!write_tracks_.empty()) 
-    {
-      int id=0;
-      for (auto const& lab : write_tracks_)
-	{
-	  processTracks(e, lab, id);
-	  id++;
-	}
-      
-      //processTracks(e,"pmtrack");
-      //processTracks(e,"cctrack");
-      //processTracks(e,"costrk");
-    }
-
-  std::cerr << "after module analyze processTracks\n";
-
-  if (!write_spacepoints_.empty()) 
-    {
-      // for (auto const& lab : write_spacepoints_)
-      //     processSP(e, lab);
-
-      // processSP(e,"pmtrack");
-      // processSP(e,"cctrack"); // no such thing
-      // processSP(e,"costrk");
-    }
-  
   if (!write_digits_.empty()) 
     {
       for (auto const& lab : write_digits_)
 	processDigits(e, lab);
-      // processMC(e,"generator");
-      // processMCPart(e,"largeant");
-      // processDigits(e,"daq");
-      // processDigits(e,"SlicerInput");
     }
 }
 

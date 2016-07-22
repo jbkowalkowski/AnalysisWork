@@ -52,7 +52,7 @@ find_ups_product( cetlib v0_00_00 )
 find_ups_product( messagefacility v0_00_00 )
 find_ups_product( larcore v0_00_00 )
 find_ups_product( larsoft v0_00_00 )
-find_ups_product( nutools v0_00_00 )
+find_ups_product( tbb v0_0 )
 
 # find_ups_product( cetpkgsupport v0_00_00 )
 # find_ups_product( cppunit v0_00_00 )
@@ -60,7 +60,6 @@ find_ups_product( nutools v0_00_00 )
 # find_ups_product( clhep v0_0_0_0 )
 # find_ups_product( sqlite v0_00_00_00 )
 # find_ups_root( v0_00_00 )
-# find_ups_product( tbb v0_0 )
 # find_ups_boost(v0_00_0)
 
 
@@ -96,7 +95,7 @@ include(BuildPlugins)
 include(UseCPack)
 
 simple_plugin(ExtractWaveforms "module" NO_INSTALL 
-  art_Framework_Services_Registry SimulationBase larcore_Geometry lardata_RawData UBooNEGeometryHelper_service)
+  art_Framework_Services_Registry SimulationBase larcore_Geometry lardata_RawData UBooNEGeometryHelper_service tbb)
 
 # cet_make_exec(fhicl_test
 #   SOURCE fhicl_test.cc
