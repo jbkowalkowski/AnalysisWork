@@ -1,0 +1,25 @@
+#!/bin/bash
+
+#PBS -S /bin/bash
+#PBS -N gpu_exp5a
+#PBS -j oe
+#PBS -o ./log_gpu_exp5a
+#PBS -m n
+#PBS -A gputest
+#PBS -q gpu
+
+# print identifying info for this job
+echo "Job ${PBS_JOBNAME} submitted from ${PBS_O_HOST} started "`date`" jobid ${PBS_JOBID}"
+
+# run training script
+THEANO_FLAGS=device=gpu1,floatX=float32,lib.cnmem=0 python ww_train.py exp5a.yaml
+
+# run training script
+THEANO_FLAGS=device=gpu1,floatX=float32,lib.cnmem=0 python ww_train.py exp5a.yaml
+
+# run testing script
+THEANO_FLAGS=device=gpu1,floatX=float32,lib.cnmem=0 python ww_classify.py exp5a.yaml
+
+
+exit
+~      

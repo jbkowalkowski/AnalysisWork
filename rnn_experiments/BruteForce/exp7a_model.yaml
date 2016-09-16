@@ -1,0 +1,49 @@
+"class_name: Sequential\nconfig:\n- class_name: Merge\n  config:\n    concat_axis:\
+  \ -1\n    dot_axes: [-1, -1]\n    layers:\n    - class_name: Sequential\n      config:\n\
+  \      - class_name: LSTM\n        config:\n          U_regularizer: null\n    \
+  \      W_regularizer: null\n          activation: softsign\n          b_regularizer:\
+  \ null\n          batch_input_shape: !!python/tuple [96, 9600, 9]\n          consume_less:\
+  \ gpu\n          dropout_U: 0.2\n          dropout_W: 0.2\n          forget_bias_init:\
+  \ one\n          go_backwards: false\n          init: glorot_uniform\n         \
+  \ inner_activation: hard_sigmoid\n          inner_init: orthogonal\n          input_dim:\
+  \ 9\n          input_dtype: float32\n          input_length: null\n          name:\
+  \ lstm_1\n          output_dim: 32\n          return_sequences: true\n         \
+  \ stateful: false\n          trainable: true\n          unroll: false\n      - class_name:\
+  \ LSTM\n        config:\n          U_regularizer: null\n          W_regularizer:\
+  \ null\n          activation: softsign\n          b_regularizer: null\n        \
+  \  batch_input_shape: !!python/tuple [null, null, 32]\n          consume_less: gpu\n\
+  \          dropout_U: 0.2\n          dropout_W: 0.2\n          forget_bias_init:\
+  \ one\n          go_backwards: false\n          init: glorot_uniform\n         \
+  \ inner_activation: hard_sigmoid\n          inner_init: orthogonal\n          input_dim:\
+  \ 32\n          input_dtype: float32\n          input_length: null\n          name:\
+  \ lstm_3\n          output_dim: 32\n          return_sequences: true\n         \
+  \ stateful: false\n          trainable: true\n          unroll: false\n    - class_name:\
+  \ Sequential\n      config:\n      - class_name: LSTM\n        config:\n       \
+  \   U_regularizer: null\n          W_regularizer: null\n          activation: softsign\n\
+  \          b_regularizer: null\n          batch_input_shape: !!python/tuple [96,\
+  \ 9600, 9]\n          consume_less: gpu\n          dropout_U: 0.2\n          dropout_W:\
+  \ 0.2\n          forget_bias_init: one\n          go_backwards: true\n         \
+  \ init: glorot_uniform\n          inner_activation: hard_sigmoid\n          inner_init:\
+  \ orthogonal\n          input_dim: 9\n          input_dtype: float32\n         \
+  \ input_length: null\n          name: lstm_2\n          output_dim: 32\n       \
+  \   return_sequences: true\n          stateful: false\n          trainable: true\n\
+  \          unroll: false\n      - class_name: LSTM\n        config:\n          U_regularizer:\
+  \ null\n          W_regularizer: null\n          activation: softsign\n        \
+  \  b_regularizer: null\n          batch_input_shape: !!python/tuple [null, null,\
+  \ 32]\n          consume_less: gpu\n          dropout_U: 0.2\n          dropout_W:\
+  \ 0.2\n          forget_bias_init: one\n          go_backwards: true\n         \
+  \ init: glorot_uniform\n          inner_activation: hard_sigmoid\n          inner_init:\
+  \ orthogonal\n          input_dim: 32\n          input_dtype: float32\n        \
+  \  input_length: null\n          name: lstm_4\n          output_dim: 32\n      \
+  \    return_sequences: true\n          stateful: false\n          trainable: true\n\
+  \          unroll: false\n    mode: sum\n    mode_type: raw\n    name: merge_1\n\
+  \    output_shape: null\n    output_shape_type: raw\n- class_name: TimeDistributed\n\
+  \  config:\n    layer:\n      class_name: Dense\n      config: {W_constraint: null,\
+  \ W_regularizer: null, activation: linear, activity_regularizer: null,\n       \
+  \ b_constraint: null, b_regularizer: null, bias: true, init: glorot_uniform,\n \
+  \       input_dim: null, name: dense_1, output_dim: 2, trainable: true}\n    name:\
+  \ timedistributed_1\n    trainable: true\n- class_name: Activation\n  config: {activation:\
+  \ softmax, name: activation_1, trainable: true}\nkeras_version: 1.0.6\nloss: binary_crossentropy\n\
+  optimizer: {beta_1: 0.8999999761581421, beta_2: 0.9990000128746033, epsilon: 1.0e-08,\n\
+  \  lr: 0.0020000000949949026, name: Nadam, schedule_decay: 0.004}\nsample_weight_mode:\
+  \ null\n"
