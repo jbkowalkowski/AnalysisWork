@@ -1,0 +1,122 @@
+#----------------------------------------------------------
+# identifier to attach to generated files
+#----------------------------------------------------------
+
+expname: 'exp6a'
+
+#----------------------------------------------------------
+# training data 
+#----------------------------------------------------------
+
+train_events:                   # events to process
+                        - '184681'
+                        - '184682'
+                        - '184683'
+                        - '184684'
+
+train_truth_files:              # truth files to process
+                        - '_truth_U.pib'
+                        - '_truth_V.pib'
+                        - '_truth_Y.pib'
+
+train_data_file:                # signal files to process; order and shape must match truth files 
+                        - '_fnoise_U.pib'
+                        - '_wnoise_U.pib'
+                        - '_fnoise_V.pib'
+                        - '_wnoise_V.pib'
+                        - '_fnoise_Y.pib'
+                        - '_wnoise_Y.pib'
+
+wirelength:             9600                        # number of timesteps in wire
+numlabels:              2                            # number of labels in truth files (classification)      
+batchsize:              96                           # possible values: must be divisor of both 2400 and 3456
+                                                # 2 x 2 x 2 x 2 x 2 x 3
+sequencelength:         9600                     # possible values: divisor of wirelength
+numattributes:          5                        # attributes per timestep
+droptrainingwires:      0.0                  # number of wire sets to drop from training set
+reservevalidation:      0.1                  # percentage of wire sets with signal to hold for validation
+prepseed:               2121                                    # seed for wire set selection
+
+#----------------------------------------------------------
+# training specific settings
+#----------------------------------------------------------
+
+numepochs:              1                            # number of epochs to train
+verboseset:             2                           # 0,1,2 level of console feedback during training
+savetrainedmodel:       True                  # whether or not to save trained model
+
+#----------------------------------------------------------
+# model callbacks - save best model during training
+#----------------------------------------------------------
+
+savebest:               True 
+monitormetric:          'val_loss'
+
+#----------------------------------------------------------
+# model callbacks - save model at each epoch
+#----------------------------------------------------------
+
+everyepochsave:         True
+
+#----------------------------------------------------------
+# model callback - early stopping
+#----------------------------------------------------------
+
+earlystopping:          False
+stopmetricmonitor:      'val_loss'
+patience:               2 
+
+#---------------------------------------------------------- 
+# forward rnn model specific settings
+#---------------------------------------------------------- 
+
+layertype:              'LSTM'                # possible types: SimpleRNN, LSTM, GRU
+numlayers:              2                    # number of LSTM layers (minimum 1)
+numnodes:               16                   # nodes per LSTM layer
+inneractivation:        'softsign'
+unroll:                 False
+dropoutW:               .2                                 # chance of droping node during training
+dropoutU:               .2
+consumeless:            'gpu'
+stateful:               True
+gobackwards:            False
+mergemode:              'sum'
+algorithm:              'Nadam()'                             # Keras learning algorithm with paramters (if any)
+lastactivation:         'softmax'                       # Keras activation for output layer
+lossfunction:           'binary_crossentropy'        # Keras loss function
+metricslist:
+                        - 'accuracy'                            # list of Keras metric 
+
+bidirectional:          True
+backwardlayers:         2
+
+#----------------------------------------------------------
+# load previously saved model to continue training
+#----------------------------------------------------------
+
+loadsavedmodel:         True 
+previousexperiment:     'exp6a'
+loadbest:               False
+
+#----------------------------------------------------------
+# model testing specific settings
+#----------------------------------------------------------
+
+test_events:
+                        - '184685'
+test_truth_files:
+                        - '_truth_U.pib'
+#                       - '_truth_V.pib'
+#                       - '_truth_Y.pib'
+test_data_file:
+                        - '_fnoise_U.pib'
+                        - '_wnoise_U.pib'
+#                       - '_fnoise_V.pib'
+#                       - '_wnoise_V.pib'
+#                       - '_fnoise_Y.pib'
+#                       - '_wnoise_Y.pib'
+droptestwires:          .99
+savepredictions:        False 
+saveimage:              True
+
+
