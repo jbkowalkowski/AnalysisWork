@@ -1,0 +1,207 @@
+PBS prologue
+Directory Listing:
+-----------------
+total 2271M
+-rw-r--r--  1 rsantos cepa 44M Aug  2 16:59 184681_fnoise_U.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  2 17:00 184681_fnoise_V.pib
+-rw-r--r--  1 rsantos cepa 64M Aug  2 17:02 184681_fnoise_Y.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  2 17:03 184681_truth_U.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  2 17:04 184681_truth_V.pib
+-rw-r--r--  1 rsantos cepa 64M Aug  2 17:06 184681_truth_Y.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  2 17:08 184681_wnoise_U.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  2 17:09 184681_wnoise_V.pib
+-rw-r--r--  1 rsantos cepa 64M Aug  2 17:10 184681_wnoise_Y.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  2 17:12 184682_fnoise_U.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  2 17:14 184682_fnoise_V.pib
+-rw-r--r--  1 rsantos cepa 64M Aug  2 17:18 184682_fnoise_Y.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  2 17:20 184682_truth_U.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  2 17:23 184682_truth_V.pib
+-rw-r--r--  1 rsantos cepa 64M Aug  2 17:26 184682_truth_Y.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  2 17:27 184682_wnoise_U.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  2 17:28 184682_wnoise_V.pib
+-rw-r--r--  1 rsantos cepa 64M Aug  2 17:30 184682_wnoise_Y.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  3 09:04 184683_fnoise_U.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  3 09:05 184683_fnoise_V.pib
+-rw-r--r--  1 rsantos cepa 64M Aug  3 09:05 184683_fnoise_Y.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  3 09:05 184683_truth_U.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  3 09:06 184683_truth_V.pib
+-rw-r--r--  1 rsantos cepa 64M Aug  3 09:06 184683_truth_Y.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  3 09:06 184683_wnoise_U.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  3 09:07 184683_wnoise_V.pib
+-rw-r--r--  1 rsantos cepa 64M Aug  3 09:07 184683_wnoise_Y.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  3 09:22 184684_fnoise_U.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  3 09:22 184684_fnoise_V.pib
+-rw-r--r--  1 rsantos cepa 64M Aug  3 09:23 184684_fnoise_Y.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  3 09:23 184684_truth_U.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  3 09:23 184684_truth_V.pib
+-rw-r--r--  1 rsantos cepa 64M Aug  3 09:24 184684_truth_Y.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  3 09:24 184684_wnoise_U.pib
+-rw-r--r--  1 rsantos cepa 44M Aug  3 09:24 184684_wnoise_V.pib
+-rw-r--r--  1 rsantos cepa 64M Aug  3 09:24 184684_wnoise_Y.pib
+-rw-r--r--  1 rsantos cepa 44M Jul 25 08:17 184685_fnoise_U.pib
+-rw-r--r--  1 rsantos cepa 44M Jul 25 08:17 184685_fnoise_V.pib
+-rw-r--r--  1 rsantos cepa 64M Jul 25 08:17 184685_fnoise_Y.pib
+-rw-r--r--  1 rsantos cepa 44M Jul 25 08:17 184685_truth_U.pib
+-rw-r--r--  1 rsantos cepa 44M Jul 25 08:18 184685_truth_V.pib
+-rw-r--r--  1 rsantos cepa 64M Jul 25 08:18 184685_truth_Y.pib
+-rw-r--r--  1 rsantos cepa 44M Jul 25 08:18 184685_wnoise_U.pib
+-rw-r--r--  1 rsantos cepa 44M Jul 25 08:18 184685_wnoise_V.pib
+-rw-r--r--  1 rsantos cepa 64M Jul 25 08:19 184685_wnoise_Y.pib
+-rw-r--r--  1 rsantos cepa  1M Aug 11 14:22 exp1a.yaml
+-rw-r--r--  1 rsantos cepa  1M Aug 11 13:58 exp25_model.yaml
+-rw-r--r--  1 rsantos cepa  1M Aug 11 13:57 exp25.yaml
+-rw-r--r--  1 rsantos cepa  1M Aug  5 15:24 experiment_template.yaml
+drwxr-xr-x  2 rsantos cepa  1M Jul 28 09:21 gpu_experiment_10
+drwxr-xr-x  2 rsantos cepa  1M Aug  1 11:35 gpu_experiment_11
+drwxr-xr-x  2 rsantos cepa  1M Aug  1 11:38 gpu_experiment_12
+drwxr-xr-x  2 rsantos cepa  1M Aug  1 11:39 gpu_experiment_13
+drwxr-xr-x  2 rsantos cepa  1M Aug  1 11:40 gpu_experiment_14
+drwxr-xr-x  2 rsantos cepa  1M Aug  2 17:08 gpu_experiment_15
+drwxr-xr-x  2 rsantos cepa  1M Aug  3 11:24 gpu_experiment_16
+drwxr-xr-x  2 rsantos cepa  1M Aug  8 14:58 gpu_experiment_19
+drwxr-xr-x  2 rsantos cepa  1M Jul 21 17:00 gpu_experiment_2
+drwxr-xr-x  2 rsantos cepa  1M Aug  8 14:59 gpu_experiment_20
+drwxr-xr-x  2 rsantos cepa  1M Aug  8 13:05 gpu_experiment_21
+drwxr-xr-x  2 rsantos cepa  1M Aug  8 13:04 gpu_experiment_22
+drwxr-xr-x  2 rsantos cepa  1M Aug  8 14:59 gpu_experiment_23
+drwxr-xr-x  2 rsantos cepa  1M Aug 10 16:00 gpu_experiment_24
+drwxr-xr-x  2 rsantos cepa  1M Jul 21 16:56 gpu_experiment_3
+drwxr-xr-x  2 rsantos cepa  1M Jul 22 10:41 gpu_experiment_4
+drwxr-xr-x  2 rsantos cepa  1M Jul 22 10:41 gpu_experiment_5
+drwxr-xr-x  2 rsantos cepa  1M Jul 25 16:04 gpu_experiment_6
+drwxr-xr-x  2 rsantos cepa  1M Jul 25 15:59 gpu_experiment_7
+drwxr-xr-x  2 rsantos cepa  1M Jul 28 14:29 gpu_experiment_8
+drwxr-xr-x  2 rsantos cepa  1M Jul 28 10:04 gpu_experiment_9
+drwxr-xr-x 10 rsantos cepa  1M Aug  3 08:46 Imaging-1.1.7
+drwxr-xr-x 10 rsantos cepa  1M Jul 20 08:57 keras
+-rw-r--r--  1 rsantos cepa  1M Aug 11 13:55 multiwire_classify.py
+-rw-r--r--  1 rsantos cepa  1M Aug 11 13:55 multiwire_train.py
+drwxr-xr-x  2 rsantos cepa  1M Aug  4 15:02 old_software
+-rw-r--r--  1 rsantos cepa  1M Jul 20 14:34 prep_train_data.py
+drwxr-xr-x  8 rsantos cepa  1M Jul 18 10:18 PyYAML-3.11
+-rw-r--r--  1 rsantos cepa  1M Aug  8 12:29 rnn_classify.py
+-rw-r--r--  1 rsantos cepa  1M Aug  5 15:24 rnn_train.py
+-rw-r--r--  1 rsantos cepa  1M Aug 11 14:21 script_exp1a
+-rw-r--r--  1 rsantos cepa  1M Aug 11 13:57 script_exp25
+-rw-r--r--  1 rsantos cepa  1M Aug  8 12:19 ww_classify.py
+-rw-r--r--  1 rsantos cepa  1M Aug  5 11:03 ww_train.py
+
+Job gpu_exp1a submitted from mic.fnal.gov started Thu Aug 11 14:22:48 CDT 2016 jobid 117894.tev.fnal.gov
+Using Theano backend.
+Using gpu device 1: Tesla K20m (CNMeM is disabled, cuDNN 4007)
+Validating new model syntax...
+____________________________________________________________________________________________________
+Layer (type)                     Output Shape          Param #     Connected to                     
+====================================================================================================
+simplernn_1 (SimpleRNN)          (96, 100, 16)         288         simplernn_input_1[0][0]          
+____________________________________________________________________________________________________
+simplernn_2 (SimpleRNN)          (96, 100, 16)         528         simplernn_1[0][0]                
+____________________________________________________________________________________________________
+timedistributed_1 (TimeDistribute(96, 100, 2)          34          simplernn_2[0][0]                
+____________________________________________________________________________________________________
+activation_1 (Activation)        (96, 100, 2)          0           timedistributed_1[0][0]          
+====================================================================================================
+Total params: 850
+____________________________________________________________________________________________________
+Compiling model...
+Epoch 1 of 10
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>last data load in epoch. Train on 9216 samples, validate on 543744 samples
+Epoch 1/1
+191s - loss: 0.0251 - acc: 0.9955 - val_loss: 0.1917 - val_acc: 0.9538
+Total elapsed time:    86.0 minutes
+Epoch 2 of 10
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>last data load in epoch. Train on 9216 samples, validate on 543744 samples
+Epoch 1/1
+190s - loss: 0.0252 - acc: 0.9955 - val_loss: 0.1755 - val_acc: 0.9548
+Total elapsed time:   169.7 minutes
+Epoch 3 of 10
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>last data load in epoch. Train on 9216 samples, validate on 543744 samples
+Epoch 1/1
+189s - loss: 0.0254 - acc: 0.9954 - val_loss: 0.1920 - val_acc: 0.9524
+Total elapsed time:   253.4 minutes
+Epoch 4 of 10
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>last data load in epoch. Train on 9216 samples, validate on 543744 samples
+Epoch 1/1
+189s - loss: 0.0253 - acc: 0.9955 - val_loss: 0.1935 - val_acc: 0.9502
+Total elapsed time:   336.5 minutes
+Epoch 5 of 10
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>last data load in epoch. Train on 9216 samples, validate on 543744 samples
+Epoch 1/1
+189s - loss: 0.0253 - acc: 0.9954 - val_loss: 0.1719 - val_acc: 0.9481
+Total elapsed time:   419.8 minutes
+Epoch 6 of 10
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>last data load in epoch. Train on 9216 samples, validate on 543744 samples
+Epoch 1/1
+192s - loss: 0.0255 - acc: 0.9955 - val_loss: 0.1421 - val_acc: 0.9583
+Total elapsed time:   503.3 minutes
+Epoch 7 of 10
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>last data load in epoch. Train on 9216 samples, validate on 543744 samples
+Epoch 1/1
+191s - loss: 0.0253 - acc: 0.9955 - val_loss: 0.1900 - val_acc: 0.9490
+Total elapsed time:   587.2 minutes
+Epoch 8 of 10
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>last data load in epoch. Train on 9216 samples, validate on 543744 samples
+Epoch 1/1
+192s - loss: 0.0253 - acc: 0.9955 - val_loss: 0.1451 - val_acc: 0.9646
+Total elapsed time:   671.4 minutes
+Epoch 9 of 10
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>last data load in epoch. Train on 9216 samples, validate on 543744 samples
+Epoch 1/1
+191s - loss: 0.0253 - acc: 0.9955 - val_loss: 0.1840 - val_acc: 0.9497
+Total elapsed time:   755.4 minutes
+Epoch 10 of 10
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>last data load in epoch. Train on 9216 samples, validate on 543744 samples
+Epoch 1/1
+192s - loss: 0.0256 - acc: 0.9955 - val_loss: 0.1851 - val_acc: 0.9488
+Total elapsed time:   839.2 minutes
+Using Theano backend.
+Using gpu device 1: Tesla K20m (CNMeM is disabled, cuDNN 4007)
+Reconstructing model...
+____________________________________________________________________________________________________
+Layer (type)                     Output Shape          Param #     Connected to                     
+====================================================================================================
+simplernn_1 (SimpleRNN)          (96, 100, 16)         288         simplernn_input_1[0][0]          
+____________________________________________________________________________________________________
+simplernn_2 (SimpleRNN)          (96, 100, 16)         528         simplernn_1[0][0]                
+____________________________________________________________________________________________________
+timedistributed_1 (TimeDistribute(96, 100, 2)          34          simplernn_2[0][0]                
+____________________________________________________________________________________________________
+activation_1 (Activation)        (96, 100, 2)          0           timedistributed_1[0][0]          
+====================================================================================================
+Total params: 850
+____________________________________________________________________________________________________
+Processing 184685_fnoise_U.pib ...
+Prediction performance for 184685_fnoise_U.pib
+Testing on 24.0 full wires
+Overall wireset performance: 184685_fnoise_U.pib_exp1a_performance.txt
+-----------------------------------------------------------------------
+True Positive:         955897
+False Positive:       1896306
+True Negative:       19623173
+False Negative:        564624
+Recall (TPR):          0.6287
+Specificity (TNR):     0.9119
+Precision:             0.3351
+Accuracy:              0.8932
+F1 Score:              0.4372
+
+Generating image...
+Total elapsed time:     5.1 minutes
+Processing 184685_wnoise_U.pib ...
+Prediction performance for 184685_wnoise_U.pib
+Testing on 24.0 full wires
+Overall wireset performance: 184685_wnoise_U.pib_exp1a_performance.txt
+-----------------------------------------------------------------------
+True Positive:         926576
+False Positive:         11964
+True Negative:       21507515
+False Negative:        593945
+Recall (TPR):          0.6094
+Specificity (TNR):     0.9994
+Precision:             0.9873
+Accuracy:              0.9737
+F1 Score:              0.7536
+
+Generating image...
+Total elapsed time:    10.0 minutes
+PBS epilogue

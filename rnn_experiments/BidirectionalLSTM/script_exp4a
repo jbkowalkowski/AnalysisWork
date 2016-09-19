@@ -1,0 +1,25 @@
+#!/bin/bash
+
+#PBS -S /bin/bash
+#PBS -N gpu_exp4a
+#PBS -j oe
+#PBS -o ./log_gpu_exp4a
+#PBS -m n
+#PBS -A gputest
+#PBS -q gpu
+
+# print identifying info for this job
+echo "Job ${PBS_JOBNAME} submitted from ${PBS_O_HOST} started "`date`" jobid ${PBS_JOBID}"
+
+# run training script
+THEANO_FLAGS=device=gpu0,floatX=float32,lib.cnmem=0 python rnn_train.py exp4a.yaml
+
+# run training script
+THEANO_FLAGS=device=gpu0,floatX=float32,lib.cnmem=0 python rnn_train.py exp4a.yaml
+
+# run testing script
+THEANO_FLAGS=device=gpu0,floatX=float32,lib.cnmem=0 python rnn_classify.py exp4a.yaml
+
+
+exit
+~      
