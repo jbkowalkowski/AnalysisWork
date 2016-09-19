@@ -37,16 +37,18 @@ def get_num_samples(sigs):
     f_sig.close()
     return num_samples
 
-def get_ranges(inp,num_samples,size):
+def get_ranges(inp): # ,num_samples,size):
     f_range = open(inp,'r')
+    temp=f_range.readline()
+    temps=temp.split()
+    num_cols = len(temps)
+    f_range.seek(0)
 
-    # ranges has six columns (wire,start,end,length,sum,median)
+    # ranges had 6 columns (wire,start,end,length,sum,median)
+    # now it has an additional (orig.start, orig.end)
     d_range = np.fromfile(f_range,dtype=int,sep=' ')
-    r_shape1=(d_range.size/6,6)
-    r_shape2=(6,d_range.size/6)
+    r_shape1=(d_range.size/num_cols,num_cols)
     d_range.shape=r_shape1
-    # d_range_t=np.transpose(d_range)
-    # wire_pos=np.argsort(d_range_t[0])
     return d_range
 
 def tofile(fout, r):
@@ -56,7 +58,7 @@ def tofile(fout, r):
 
 def rewrite_ranges(inp,size,out):
     num_samples = get_num_samples(inp[1])
-    d_range = get_ranges(inp[0],num_samples,size)
+    d_range = get_ranges(inp[0]) # ,num_samples,size)
     d_range_t=np.transpose(d_range)
     
     gt50=(d_range_t[2]-d_range_t[1])>size

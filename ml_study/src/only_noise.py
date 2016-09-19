@@ -3,121 +3,133 @@
 # python only_noise.py run-number
 # old - python only_noise.py sig_no_noise sig_time_noise noise_time.csv
 
+# 0123456789012345678901234
+#             +
+# ..........xxxxx..........
+# ooooooooooIoooooooooo          
+#  ooooooooooIoooooooooo         
+#   ooooooooooIoooooooooo        
+#    ooooooooooIoooooooooo       
+#     ooooooooooIoooooooooo      
+#     ......xxxxx..........
+#    .......xxxxx.........
+#   ........xxxxx........
+#  .........xxxxx.......
+# ..........xxxxx......
+
+# need to start from right side (window making) and move left
+# centering the signal point of interest.
+# should one on either side be considered, where the answer is false?
+# in the example, window length is 20+1
+# extend interval .5 * (window length - 1) on left and right
+# will generate one window per signal value in interval (in order)
+# assume signal interval start,end defined
+# win_center = length(window)/2
+# int_center = (end-start)/2
+# for i in (end-start)
+#  X = array of length(window)
+#  s=max(start-win_center+i,0)
+#  e=min(s+length(window),length(real signal window))
+#  X[s:e] = from real signal wo/noise + random section of noise
+#  # do this for both frequency and time-based noise
+#  ys.append(True)
+#  Xs.append(X)
+
 import sys
 import glob
 import numpy as np
 
 import split_range as sr
 
-
-def num_windows(start,end,size): return (end-start-1)/(size) + 1
-
-def calc_stride(start,end,size):
-    return float(end-start-size)/(num_windows(start,end,size)-1)
-
-def calc_range(start,end,size):
-    nw=num_windows(start,end,size)
-    s=calc_stride(start,end,size)
-    offset=nw*s
-    return np.array(np.arange(start,start+offset,s),dtype=int)
-                    
-def split_big_ones(ranges, size):
-    for r in ranges:
-        sr=calc_range(r[1],r[2].size)
-        temp=np.array(shape=(sr.size,r.size))
-        for si in sr.size:
-            temp[si]=np.like(r)
-            temp[si][1]=sr[si]
-            temp[si][2]=sr[si]+size
-        
-def process(inp):
+def process(inp,size):
     print inp
+
+    num_samples = sr.get_num_samples(inp[0])
+    d_range = sr.get_ranges(inp[3]) # ,num_samples,size)
+
+    #print num_samples, d_range.size
+    
     f_sig = open(inp[0],'r')
     f_nt  = open(inp[1],'r')
     f_nf  = open(inp[2],'r')
-    f_range = open(inp[3],'r')
-
-    # calculate line length
-    temp=f_sig.readline()
-    temps=temp.split()
-    num_samples = len(temps)
-    f_sig.seek(0)
 
     print 'start reads'
     d_sig = np.fromfile(f_sig,dtype=int,sep=' ')
     print 'done with sig'
-    #d_nt  = np.fromfile(f_nt,dtype=int,sep=' ')
+    d_nt  = np.fromfile(f_nt,dtype=int,sep=' ')
     print 'done with np'
-    #d_nf  = np.fromfile(f_nf,dtype=int,sep=' ')
+    d_nf  = np.fromfile(f_nf,dtype=int,sep=' ')
     print 'done with nf'
 
     d_sig.shape = ( d_sig.size/num_samples,num_samples )
-    #d_nt.shape  = ( d_sig.size/num_samples,num_samples )
-    #d_nf.shape  = ( d_sig.size/num_samples,num_samples )
+    d_nt.shape  = ( d_nt.size/num_samples,num_samples )
+    d_nf.shape  = ( d_nf.size/num_samples,num_samples )
 
-    # ranges has six columns (wire,start,end,length,sum,median)
-    d_range = np.fromfile(f_range,dtype=int,sep=' ')
-    r_shape1=(d_range.size/6,6)
-    r_shape2=(6,d_range.size/6)
-    d_range.shape=r_shape1
-    d_range_t=np.transpose(d_range)
-    wire_pos=np.argsort(d_range_t[0])
+    d_only_nt = d_nt - d_sig
+    d_only_nf = d_nf - d_sig
 
-    gt50=(d_range_t[2]-d_range_t[1])>50
-    lt50=(d_range_t[2]-d_range_t[1])<=50
-    near_start=d_range_t[1]<25
-    near_end=(d_range_t[2] > (num_samples-25))
-    big=d_range[gt50]
-    small=d_range[lt50 & np.logical_not(near_start) & np.logical_not(near_end)]
-    close0=d_range[ near_start & lt50 ]
-    close_end=d_range[ near_end & lt50 ]
-    zeros=d_range[ d_range_t[3] ==0 ]
-
-    split_ranges = split_big_ones(big,50)
-
-    print "close0=",close0.size/6,"closeend=",close_end.size/6
-    print "big=",big.size/6,"small=",small.size/6,"d_range size=",d_range_t[0].size
-    print "zeros=",zeros.size
-
-    def func(a):
-        b=np.zeros(50,dtype=long)
+    def func(a,dset):
+        b=np.zeros(size,dtype=long)
         start=a[1]
         end=a[2]
-        offset=25-(end-start+1)/2
-        b[(offset):(offset+end-start)]=d_sig[a[0]][ start:end ]
+        offset=(size/2)-(end-start+1)/2
+        b[(offset):(offset+end-start)]=dset[a[0]][ start:end ]-a[5]
         return b
 
+    def func_with_nt(a):
+        return func(a,d_sig) + func(a,d_nt)
+
+    def func_with_nf(a):
+        return func(a,d_sig) + func(a,d_nf)
+
+    def func_with_both(a):
+        return func(a,d_sig) + func(a,d_nf) + func(a,d_nt)
+
+    def func_answers(a):
+        return func(a,d_sig) != 0
+    
     # this works for the close and smaller than 50 intervals
-    close_start=np.apply_along_axis(func,1,close0)
+    all_answers=np.apply_along_axis(func_answers,1,d_range)
+    all_both=np.apply_along_axis(func_with_both,1,d_range)
+    all_nt=np.apply_along_axis(func_with_nt,1,d_range)
+    all_nf=np.apply_along_axis(func_with_nf,1,d_range)
 
-    # need to break up larger intervals into size 50 ones
-    
-    
-    print close_start
-    print close_start.shape
-    # print close0
-    #print d_range[0:3][np.array([True,False,False])]
-    
+    rstart=10
+    rend=14
+    print all_nf[rstart:rend]
+    print all_nt[rstart:rend]
+    print all_both[rstart:rend]
+    print all_answers[rstart:rend]
+
+    all_nf.tofile(open('all_'+inp[2],'w'),sep=' ',format="%d")
+    all_nt.tofile(open('all_'+inp[1],'w'),sep=' ',format="%d")
+    all_both.tofile(open('all_'+inp[0],'w'),sep=' ',format="%d")
+    all_answers.tofile(open('all_'+inp[0],'w'),sep=' ',format="%d")
+
     sys.exit(0)
-    
-    for i in range(0,5):
-        print d_range[i]
-    
-if len(sys.argv)<2:
-    print "bad arg list"
-    sys.exit(1)
 
-names = glob.glob("%s_*"%(sys.argv[1]))
+def do_main():
+        
+    if len(sys.argv)<2:
+        print "bad arg list - how about an event number?"
+        sys.exit(1)
 
-inp_sig = glob.glob("%s_*no_noise*"%sys.argv[1])
-inp_noise_time = glob.glob("%s_*time_noise*"%sys.argv[1])
-inp_noise_freq = glob.glob("%s_*freq_noise*"%sys.argv[1])
-inp_range = glob.glob("sig_%s_*no_noise*"%sys.argv[1])
-out_sig_noise = glob.glob("%s_*freq_noise*"%sys.argv[1])
+    # names = glob.glob("%s_*"%(sys.argv[1]))
 
-for a in zip(inp_sig,inp_noise_time,inp_noise_freq,inp_range):
-    process(a)
+    inp_sig = glob.glob("%s_*no_noise*"%sys.argv[1])
+    inp_noise_time = glob.glob("%s_*time_noise*"%sys.argv[1])
+    inp_noise_freq = glob.glob("%s_*freq_noise*"%sys.argv[1])
+    inp_range = glob.glob("newsig_%s_*no_noise*"%sys.argv[1])
+    inp_ans = glob.glob("ans_%s_*no_noise*"%sys.argv[1])
+    # out_sig_noise = glob.glob("%s_*freq_noise*"%sys.argv[1])
+
+    for a in zip(inp_sig,inp_noise_time,inp_noise_freq,inp_range,in_ans):
+        process(a,50)
     
+if "__main__" == __name__:
+    do_main()
+
+# this is just here for reference, not meant to ever be run!
 def func():
 
     f_sig = open(inp_sig,'r')
